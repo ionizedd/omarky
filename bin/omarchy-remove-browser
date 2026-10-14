@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # omarchy:summary=Remove a supported browser and clean up Omarchy browser defaults
-# omarchy:args=<chrome|brave|brave-origin|edge|firefox|zen>
+# omarchy:args=<chromium|chrome|brave|brave-origin|edge|firefox|zen>
 # omarchy:examples=omarchy remove browser firefox | omarchy remove browser brave
 # omarchy:requires-sudo=true
 
@@ -13,12 +13,23 @@ set_fallback_default_browser() {
     return
   fi
 
-  if omarchy-cmd-present chromium; then
+  # Firefox is the default browser that ships with the system; Chromium is the
+  # next choice when Firefox itself is the one going away.
+  if [[ $1 != "firefox.desktop" ]] && omarchy-cmd-present firefox; then
+    env -u BROWSER XDG_CURRENT_DESKTOP= xdg-settings set default-web-browser firefox.desktop || true
+  elif [[ $1 != "chromium.desktop" ]] && omarchy-cmd-present chromium; then
     env -u BROWSER XDG_CURRENT_DESKTOP= xdg-settings set default-web-browser chromium.desktop || true
   fi
 }
 
 case $1 in
+chromium)
+  echo "Removing Chromium..."
+  set_fallback_default_browser chromium.desktop
+  omarchy-pkg-drop chromium
+  rm -f ~/.config/chromium-flags.conf
+  sudo rm -f /etc/chromium/policies/managed/color.json /etc/chromium/policies/managed/omarchy.json
+  ;;
 chrome)
   echo "Removing Chrome..."
   set_fallback_default_browser google-chrome.desktop
@@ -64,7 +75,7 @@ zen)
   omarchy-pkg-drop zen-browser-bin
   ;;
 *)
-  echo "Usage: omarchy-remove-browser <chrome|brave|brave-origin|edge|firefox|zen>"
+  echo "Usage: omarchy-remove-browser <chromium|chrome|brave|brave-origin|edge|firefox|zen>"
   exit 1
   ;;
 esac

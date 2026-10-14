@@ -1,9 +1,45 @@
 {
   "policies": {
     "DontCheckDefaultBrowser": true,
+    "DisableTelemetry": true,
+    "DisableFirefoxStudies": true,
+    "DisablePocket": true,
+    "EncryptedMediaExtensions": {
+      "Enabled": false,
+      "Locked": false
+    },
+    "FirefoxSuggest": {
+      "SponsoredSuggestions": false,
+      "ImproveSuggest": false,
+      "Locked": false
+    },
+    "SearchEngines": {
+      "Default": "DuckDuckGo",
+      "Remove": ["Google"]
+    },
     "Preferences": {
       "apz.overscroll.enabled": {
         "Value": true,
+        "Status": "default"
+      },
+      "browser.safebrowsing.malware.enabled": {
+        "Value": false,
+        "Status": "default"
+      },
+      "browser.safebrowsing.phishing.enabled": {
+        "Value": false,
+        "Status": "default"
+      },
+      "browser.safebrowsing.downloads.enabled": {
+        "Value": false,
+        "Status": "default"
+      },
+      "browser.safebrowsing.downloads.remote.enabled": {
+        "Value": false,
+        "Status": "default"
+      },
+      "geo.provider.network.url": {
+        "Value": "https://api.beacondb.net/v1/geolocate",
         "Status": "default"
       },
       "media.ffmpeg.vaapi.enabled": {

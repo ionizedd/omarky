@@ -75,19 +75,38 @@ pass "copy-url native host installer registers the stable extension id"
   fail "copy-url native host installer covers Brave Origin"
 pass "copy-url native host installer covers Brave Origin"
 
-# Chromium ships in the base packages, so fresh installs do not go through
-# omarchy-install-browser, and they mark every migration as already applied.
-# The user install still has to register the host itself.
+# An image that ships Chromium does not go through omarchy-install-browser, and
+# fresh installs mark every migration as already applied. The user install
+# still has to register the host itself.
 grep -q 'user/chromium.sh' "$ROOT/install/user/all.sh" ||
   fail "user install runs the Chromium native messaging host setup"
 
+# Pin omarchy-cmd-present's answer for chromium so the host's own packages
+# don't decide which branch runs.
+chromium_present_bin="$TMPDIR/chromium-present-bin"
+chromium_missing_bin="$TMPDIR/chromium-missing-bin"
+mkdir -p "$chromium_present_bin" "$chromium_missing_bin"
+printf '#!/bin/bash\n[[ $1 == "chromium" ]] && exit 0\nexec "%s/bin/omarchy-cmd-present" "$@"\n' "$ROOT" >"$chromium_present_bin/omarchy-cmd-present"
+printf '#!/bin/bash\n[[ $1 == "chromium" ]] && exit 1\nexec "%s/bin/omarchy-cmd-present" "$@"\n' "$ROOT" >"$chromium_missing_bin/omarchy-cmd-present"
+chmod +x "$chromium_present_bin/omarchy-cmd-present" "$chromium_missing_bin/omarchy-cmd-present"
+
 fresh_home="$TMPDIR/fresh-install"
-HOME="$fresh_home" OMARCHY_PATH="$ROOT" PATH="$ROOT/bin:$PATH" \
+HOME="$fresh_home" OMARCHY_PATH="$ROOT" PATH="$chromium_present_bin:$ROOT/bin:$PATH" \
   bash -euo pipefail -c 'source "$ROOT/install/user/chromium.sh"'
 
 [[ -f $fresh_home/.config/chromium/NativeMessagingHosts/com.omarchy.copy_url.json ]] ||
   fail "fresh install registers the copy-url native messaging host"
 pass "fresh install registers the copy-url native messaging host"
+
+# Firefox is the default browser, so an install without Chromium leaves the
+# Chromium profile alone.
+no_chromium_home="$TMPDIR/fresh-install-no-chromium"
+HOME="$no_chromium_home" OMARCHY_PATH="$ROOT" PATH="$chromium_missing_bin:$ROOT/bin:$PATH" \
+  bash -euo pipefail -c 'source "$ROOT/install/user/chromium.sh"'
+
+[[ ! -e $no_chromium_home/.config/chromium ]] ||
+  fail "fresh install without Chromium does not create a Chromium profile"
+pass "fresh install without Chromium skips the Chromium native messaging hosts"
 
 copied_url=$(bash -c '
   source "$1"

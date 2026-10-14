@@ -1,8 +1,8 @@
 # Browsers
 
-Omarchy ships with [Chromium](https://www.chromium.org/) as the default browser. It's the plain open-source build, themed to match the rest of your system, and it's what `Super + Shift + Return` opens and what every [web app](25-web-apps.md) runs inside.
+Omarchy ships with [Firefox](https://www.firefox.com/) as the default browser. It's what `Super + Shift + Return` opens, and it comes set up so Google isn't in the loop: DuckDuckGo is the search engine and Google is removed from the search list, telemetry and studies are off, Google Safe Browsing is off, location lookups go to [BeaconDB](https://beacondb.net/) instead of Google, and DRM video (Widevine, which Firefox downloads from Google) stays off until a site asks for it and you say yes.
 
-If Chromium isn't your taste, you're not stuck with it. Under _Install > Browser_ in the Omarchy menu you'll find Chrome, Edge, Brave, Brave Origin, Firefox, and [Zen](https://zen-browser.app/). Pick one and Omarchy installs it, sets up its policy directory, and applies your current theme to it.
+If Firefox isn't your taste, you're not stuck with it. Under _Install > Browser_ in the Omarchy menu you'll find Chromium, Chrome, Edge, Brave, Brave Origin, and [Zen](https://zen-browser.app/). Pick one and Omarchy installs it, sets up its policy directory, and applies your current theme to it.
 
 ## Making one the default
 
@@ -30,10 +30,14 @@ These are Chromium-family only. Firefox and Zen don't get them.
 
 ## Firefox and Zen
 
-Firefox and Zen are a different family, so they get different treatment: Omarchy installs a policies file for sensible defaults and switches them into native Wayland mode, which you want for fractional scaling and smooth trackpad scrolling.
+Firefox and Zen are a different family, so they get different treatment: Omarchy installs a policies file (`/usr/lib/firefox/distribution/policies.json`) with the privacy defaults above and native Wayland settings for fractional scaling and smooth trackpad scrolling. The search, Safe Browsing, location and DRM settings are defaults rather than locks, so you can change them in Settings or `about:config`; telemetry and studies stay off.
 
 They don't get the Chromium extensions above, and they're not themed by Omarchy, so those parts of the experience are yours to set up.
 
+## Web apps without Chromium
+
+[Web apps](25-web-apps.md) run as their own app windows inside a Chromium-family browser. With only Firefox installed, a web app opens in a new Firefox window instead. Install Chromium (or another Chromium-family browser) if you want the separate app windows back.
+
 ## Removing one again
 
-Anything you installed here can be taken back off under _Remove > Browser_. Chromium isn't in that list — it's part of the base system.
+Anything you installed here can be taken back off under _Remove > Browser_, Firefox included. If you remove the browser that's currently the default, Firefox takes over again, or Chromium when Firefox is the one going.

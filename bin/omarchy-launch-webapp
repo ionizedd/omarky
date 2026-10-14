@@ -10,8 +10,14 @@ google-chrome* | brave* | microsoft-edge* | opera* | vivaldi* | helium*) ;;
 *) browser="chromium.desktop" ;;
 esac
 
-browser_exec=$(sed -n 's/^Exec=\([^ ]*\).*/\1/p' {~/.local,~/.nix-profile,/usr}/share/applications/$browser 2>/dev/null | head -1)
+if [[ $browser == "chromium.desktop" ]] && omarchy-cmd-missing chromium; then
+  # Without a Chromium-family browser there is no app-mode window, so the web
+  # app opens in a new window of the default browser instead.
+  omarchy-launch-browser --new-window "$1"
+else
+  browser_exec=$(sed -n 's/^Exec=\([^ ]*\).*/\1/p' {~/.local,~/.nix-profile,/usr}/share/applications/$browser 2>/dev/null | head -1)
 
-if ! omarchy-cmd-browser-handoff "$browser_exec" --app="$1" "${@:2}"; then
-  exec setsid uwsm-app -- $browser_exec --app="$1" "${@:2}"
+  if ! omarchy-cmd-browser-handoff "$browser_exec" --app="$1" "${@:2}"; then
+    exec setsid uwsm-app -- $browser_exec --app="$1" "${@:2}"
+  fi
 fi

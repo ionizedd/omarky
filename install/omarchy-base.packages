@@ -14,7 +14,6 @@ bluez-utils
 bolt
 brightnessctl
 btop
-chromium
 cliamp
 cups
 cups-filters
@@ -42,6 +41,7 @@ fcitx5-qt
 fd
 ffmpeg
 ffmpegthumbnailer
+firefox
 fontconfig
 foot
 fzf
