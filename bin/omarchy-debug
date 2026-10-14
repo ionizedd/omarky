@@ -66,7 +66,7 @@ if [[ $PRINT_ONLY = "true" ]]; then
 fi
 
 OPTIONS=("View log" "Save in current directory")
-if ping -c 1 8.8.8.8 >/dev/null 2>&1; then
+if ping -c 1 9.9.9.9 >/dev/null 2>&1; then
   OPTIONS=("Upload log" "${OPTIONS[@]}")
 fi
 
