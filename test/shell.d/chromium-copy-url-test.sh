@@ -86,8 +86,22 @@ grep -q 'user/chromium.sh' "$ROOT/install/user/all.sh" ||
 chromium_present_bin="$TMPDIR/chromium-present-bin"
 chromium_missing_bin="$TMPDIR/chromium-missing-bin"
 mkdir -p "$chromium_present_bin" "$chromium_missing_bin"
-printf '#!/bin/bash\n[[ $1 == "chromium" ]] && exit 0\nexec "%s/bin/omarchy-cmd-present" "$@"\n' "$ROOT" >"$chromium_present_bin/omarchy-cmd-present"
-printf '#!/bin/bash\n[[ $1 == "chromium" ]] && exit 1\nexec "%s/bin/omarchy-cmd-present" "$@"\n' "$ROOT" >"$chromium_missing_bin/omarchy-cmd-present"
+cat >"$chromium_present_bin/omarchy-cmd-present" <<SH
+#!/bin/bash
+if [[ \$1 == "chromium" ]]; then
+  exit 0
+else
+  exec "$ROOT/bin/omarchy-cmd-present" "\$@"
+fi
+SH
+cat >"$chromium_missing_bin/omarchy-cmd-present" <<SH
+#!/bin/bash
+if [[ \$1 == "chromium" ]]; then
+  exit 1
+else
+  exec "$ROOT/bin/omarchy-cmd-present" "\$@"
+fi
+SH
 chmod +x "$chromium_present_bin/omarchy-cmd-present" "$chromium_missing_bin/omarchy-cmd-present"
 
 fresh_home="$TMPDIR/fresh-install"
