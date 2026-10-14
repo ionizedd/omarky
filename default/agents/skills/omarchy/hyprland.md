@@ -35,7 +35,7 @@ applies nor validates them:
 Edit `~/.config/hypr/bindings.lua`. Format:
 ```lua
 o.bind("SUPER + SHIFT + R", "SSH", "alacritty -e ssh your-server")
-o.bind("SUPER + B", "Browser", { launch = "chromium" })  -- launch wraps with uwsm-app
+o.bind("SUPER + B", "Browser", { launch = "firefox" })  -- launch wraps with uwsm-app
 o.bind("SUPER + M", "Theme menu", { menu = "theme" })     -- toggle an Omarchy menu route
 o.bind("SUPER + N", "Network", { panel = "omarchy.network" })  -- toggle a shell panel
 ```
