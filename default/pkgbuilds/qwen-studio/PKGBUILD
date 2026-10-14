@@ -23,8 +23,10 @@ pkgdesc="Unofficial Qwen chat desktop app with local MCP tools"
 arch=('x86_64' 'aarch64')
 url="https://github.com/youssefvdel/qwen-studio"
 license=('MIT')
-depends=('webkit2gtk-4.1' 'gtk3' 'libayatana-appindicator' 'nodejs' 'openssl' 'hicolor-icon-theme')
-makedepends=('git' 'rust' 'npm' 'pkgconf')
+# npm provides npx, which MCP servers added in the app almost always run with.
+# As a make dependency, makepkg -r would remove it again after the build.
+depends=('webkit2gtk-4.1' 'gtk3' 'libayatana-appindicator' 'nodejs' 'npm' 'openssl' 'hicolor-icon-theme')
+makedepends=('git' 'rust' 'pkgconf')
 options=('!lto' '!debug')
 _commit=8b1451b0d65ff2e880ba20e6314c6adc9405dc90
 source=("$pkgname::git+https://github.com/youssefvdel/qwen-studio.git#commit=$_commit"

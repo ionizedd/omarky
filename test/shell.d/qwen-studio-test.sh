@@ -34,6 +34,11 @@ grep -q '^+    #\[cfg(debug_assertions)\]' "$patch_file" && grep -q 'tauri_plugi
   fail "the patch keeps the MCP bridge plugin out of release builds"
 pass "the patch carries the MCP path and network socket fixes"
 
+# MCP servers added in the app run with npx, so npm has to outlive the build
+# (makepkg -r removes make dependencies).
+grep -q "^depends=(.*'npm'" "$pkgbuild_dir/PKGBUILD" || fail "npm is a runtime dependency, so npx stays installed"
+pass "npm is a runtime dependency, so npx stays installed"
+
 mkdir -p "$tmp_dir/bin"
 cat >"$tmp_dir/bin/makepkg" <<'SCRIPT'
 #!/bin/bash
