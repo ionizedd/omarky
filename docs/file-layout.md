@@ -139,6 +139,8 @@ default/**                     ──►  omarchy-settings    /usr/share/omarchy
   ├─ sddm/omarchy/                                      /usr/share/sddm/themes/omarchy/
   ├─ sddm/hyprland.lua                                  /usr/share/sddm/hyprland.lua
   ├─ wayland-sessions/omarchy.desktop                   /usr/local/share/wayland-sessions/
+  ├─ pkgbuilds/qwen-studio/                            /usr/share/omarchy/default/pkgbuilds/qwen-studio/
+  │                                                       (built by `omarchy install ai qwen` with makepkg)
   └─ plymouth/                                          /usr/share/plymouth/themes/omarchy/
 
 logo.{txt,svg}, icon.{txt,png}  ──► omarchy-settings    /usr/share/omarchy/  (resync source)

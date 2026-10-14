@@ -1,0 +1,512 @@
+Entropy fixes for Qwen Studio 8b1451b0d65f, see the PKGBUILD header.
+
+diff --git a/capabilities/default.json b/capabilities/default.json
+index 5fe8e29..f42f2f3 100644
+--- a/capabilities/default.json
++++ b/capabilities/default.json
+@@ -25,12 +25,6 @@
+     "fs:allow-document-read-recursive",
+     "fs:allow-download-read-recursive",
+     "store:default",
+-    "mcp-client-connect",
+-    "mcp-client-close",
+-    "mcp-client-tool-list",
+-    "mcp-client-tool-call",
+-    "mcp-client-get-config",
+-    "mcp-client-update-config",
+     "window-commands",
+     "settings-commands",
+     "mcp-bridge:default",
+diff --git a/capabilities/mcp.json b/capabilities/mcp.json
+new file mode 100644
+index 0000000..6341d47
+--- /dev/null
++++ b/capabilities/mcp.json
+@@ -0,0 +1,17 @@
++{
++  "$schema": "../gen/schemas/desktop-schema.json",
++  "identifier": "mcp",
++  "description": "Local MCP servers, for the Qwen chat page only. An MCP config names a command to run on this computer, so the other remote sites in the default capability (sign-in pages on Alibaba domains) don't get these.",
++  "windows": ["main", "window-*"],
++  "remote": {
++    "urls": ["https://chat.qwen.ai"]
++  },
++  "permissions": [
++    "mcp-client-connect",
++    "mcp-client-close",
++    "mcp-client-tool-list",
++    "mcp-client-tool-call",
++    "mcp-client-get-config",
++    "mcp-client-update-config"
++  ]
++}
+diff --git a/src/lib.rs b/src/lib.rs
+index 08c79e5..ff92693 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -7,6 +7,11 @@ mod window;
+ 
+ use tauri::Manager;
+ 
++/// Set (to anything) when a distribution builds the package. Its package
++/// manager delivers updates, so the built-in updater stays quiet rather than
++/// offering to overwrite files the package manager owns.
++const PACKAGED: bool = option_env!("QWEN_STUDIO_PACKAGED").is_some();
++
+ #[cfg(target_os = "linux")]
+ fn setup_gtk_drag_drop(_app: &tauri::AppHandle) {
+     log::info!("[DragDrop] Using Tauri built-in drag-drop (WebKitGTK)");
+@@ -25,7 +30,7 @@ pub fn run() {
+     // Init script is now built by window::build_init_script() for consistency
+     // across all windows (main and additional)
+ 
+-    tauri::Builder::default()
++    let builder = tauri::Builder::default()
+         .plugin(tauri_plugin_log::Builder::default().build())
+         .plugin(tauri_plugin_store::Builder::default().build())
+         .plugin(tauri_plugin_shell::init())
+@@ -34,8 +39,16 @@ pub fn run() {
+ .plugin(tauri_plugin_clipboard_manager::init())
+ // .plugin(tauri_plugin_deep_link::init()) // Disabled: auth handled in-WebView now
+         // Single-instance plugin removed to allow multiple windows
+-        .plugin(tauri_plugin_updater::Builder::new().build())
+-        .plugin(tauri_plugin_mcp_bridge::init())
++        .plugin(tauri_plugin_updater::Builder::new().build());
++
++    // The MCP bridge plugin opens an unauthenticated WebSocket on every network
++    // interface (0.0.0.0:9223) that can run JavaScript inside the app, and from
++    // there the MCP commands. It is a development tool, as its own docs say, so
++    // release builds leave it out.
++    #[cfg(debug_assertions)]
++    let builder = builder.plugin(tauri_plugin_mcp_bridge::init());
++
++    builder
+         .setup(move |app| {
+             use std::sync::Arc;
+             use tokio::sync::Mutex;
+@@ -55,23 +68,19 @@ pub fn run() {
+             // Clear ALL storage and inject qwen-core BEFORE page loads
+             let combined_script = window::build_init_script();
+ 
+-            let icon_path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+-                .join("icons")
+-                .join("icon.png");
+-            let icon = if icon_path.exists() {
+-                let bytes = std::fs::read(&icon_path).ok();
+-                bytes.and_then(|b| {
+-                    image::load_from_memory(&b)
+-                        .ok()
+-                        .map(|img| img.into_rgba8())
+-                        .map(|img| {
+-                            let (w, h) = img.dimensions();
+-                            tauri::image::Image::new_owned(img.into_raw(), w, h)
+-                        })
+-                })
+-            } else {
+-                None
+-            };
++            if let Ok(dir) = app.path().resource_dir() {
++                mcp::set_resource_dir(dir);
++            }
++
++            // Embedded at build time: reading it from the crate directory at
++            // run time only worked on the machine that built the binary.
++            let icon = image::load_from_memory(include_bytes!("../icons/icon.png"))
++                .ok()
++                .map(|img| img.into_rgba8())
++                .map(|img| {
++                    let (w, h) = img.dimensions();
++                    tauri::image::Image::new_owned(img.into_raw(), w, h)
++                });
+ 
+             let url = "https://chat.qwen.ai".parse().unwrap();
+             let window_builder = tauri::WebviewWindowBuilder::new(
+@@ -423,6 +432,11 @@ async fn check_for_updates(app: &tauri::AppHandle, manual: bool) {
+     use tauri_plugin_updater::UpdaterExt;
+     use tauri::Emitter;
+ 
++    if PACKAGED {
++        log::info!("[Updater] Installed by a package manager, which handles updates");
++        return;
++    }
++
+     let current_version = env!("CARGO_PKG_VERSION");
+ 
+     let updater = match app.updater() {
+@@ -495,6 +509,10 @@ async fn install_update_with_progress(app: tauri::AppHandle) -> Result<(), Strin
+     use tauri_plugin_updater::UpdaterExt;
+     use tauri::Emitter;
+ 
++    if PACKAGED {
++        return Err("Qwen Studio was installed by your package manager, so it updates along with your system.".to_string());
++    }
++
+     let current_version = env!("CARGO_PKG_VERSION");
+ 
+     let updater = app.updater().map_err(|e| e.to_string())?;
+@@ -586,6 +604,15 @@ async fn get_update_info(app: tauri::AppHandle) -> Result<UpdateInfo, String> {
+ 
+     let current_version = env!("CARGO_PKG_VERSION").to_string();
+ 
++    if PACKAGED {
++        return Ok(UpdateInfo {
++            current_version: current_version.clone(),
++            available: false,
++            latest_version: current_version,
++            release_notes: String::new(),
++        });
++    }
++
+     let updater = app.updater().map_err(|e| e.to_string())?;
+     match updater.check().await {
+         Ok(Some(update)) => {
+diff --git a/src/mcp.rs b/src/mcp.rs
+index 3158dea..b67dbf3 100644
+--- a/src/mcp.rs
++++ b/src/mcp.rs
+@@ -1,6 +1,7 @@
+ use anyhow::Result;
+ use serde::{Deserialize, Serialize};
+ use std::collections::HashMap;
++use std::path::{Path, PathBuf};
+ use std::sync::Arc;
+ use std::time::Duration;
+ use tauri::Manager;
+@@ -66,12 +67,103 @@ pub struct Bridge {
+     _child: tokio::process::Child,
+ }
+ 
++/// Tauri's resource directory, where its own bundles (deb, rpm, AppImage) put
++/// mcp-bridge.mjs. Set once the app is running.
++static RESOURCE_DIR: std::sync::OnceLock<PathBuf> = std::sync::OnceLock::new();
++
++pub fn set_resource_dir(dir: PathBuf) {
++    let _ = RESOURCE_DIR.set(dir);
++}
++
++/// The directory holding mcp-bridge.mjs and the Node modules bundled with it.
++///
++/// A packaged install keeps them next to the real executable, and Tauri's own
++/// bundles keep them in its resource directory. Debug builds
++/// (`tauri dev`, `cargo test`) run from the source checkout instead. This used
++/// to be the crate directory baked in at compile time, which pointed every
++/// install at the build machine's checkout, so MCP never started anywhere else.
++pub fn app_dir() -> Option<PathBuf> {
++    let beside_exe = std::env::current_exe()
++        .ok()
++        .and_then(|exe| exe.canonicalize().ok())
++        .and_then(|exe| exe.parent().map(Path::to_path_buf));
++    let candidates = beside_exe.into_iter().chain(RESOURCE_DIR.get().cloned());
++    for dir in candidates {
++        if dir.join("mcp-bridge.mjs").is_file() {
++            return Some(dir);
++        }
++    }
++
++    #[cfg(debug_assertions)]
++    {
++        let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
++        if dir.join("mcp-bridge.mjs").is_file() {
++            return Some(dir);
++        }
++    }
++
++    None
++}
++
++/// Command and arguments for a built-in MCP server: the copy bundled with the
++/// app when there is one, so nothing is fetched from npm at launch, otherwise
++/// `npx -y` as before. A TypeScript entry runs through the bundled tsx, since
++/// qwen-core's own launcher would fetch tsx with npx.
++fn builtin_server(package: &str, entry: &str, extra_args: Vec<String>) -> (String, Vec<String>) {
++    let bundled = app_dir().and_then(|dir| {
++        let modules = dir.join("node_modules");
++        let script = modules.join(package).join(entry);
++        if !script.is_file() {
++            return None;
++        }
++        let mut args = Vec::new();
++        if entry.ends_with(".ts") {
++            let tsx = modules.join("tsx").join("dist").join("cli.mjs");
++            if !tsx.is_file() {
++                return None;
++            }
++            args.push(tsx.to_string_lossy().to_string());
++        }
++        args.push(script.to_string_lossy().to_string());
++        Some(args)
++    });
++
++    let (command, mut args) = match bundled {
++        Some(args) => ("node".to_string(), args),
++        None => ("npx".to_string(), vec!["-y".to_string(), package.to_string()]),
++    };
++    args.extend(extra_args);
++    (command, args)
++}
++
++/// Directories the Filesystem server may use: the user's home and /tmp, plus
++/// ~/Projects when it exists. The server refuses to start if any directory it
++/// is given is missing, so only existing ones are passed.
++fn filesystem_dirs() -> Vec<String> {
++    let mut allowed = Vec::new();
++    if let Some(home) = dirs::home_dir() {
++        allowed.push(home.to_string_lossy().to_string());
++        let projects = home.join("Projects");
++        if projects.is_dir() {
++            allowed.push(projects.to_string_lossy().to_string());
++        }
++    }
++    allowed.push("/tmp".to_string());
++    allowed
++}
++
+ impl Bridge {
+     async fn new() -> Result<Self> {
+-        let bridge_path = concat!(env!("CARGO_MANIFEST_DIR"), "/mcp-bridge.mjs");
++        let dir = app_dir().ok_or_else(|| {
++            anyhow::anyhow!(
++                "mcp-bridge.mjs not found next to {:?}",
++                std::env::current_exe().ok()
++            )
++        })?;
++        let bridge_path = dir.join("mcp-bridge.mjs");
+ 
+         let mut child = Command::new("node")
+-            .arg(bridge_path)
++            .arg(&bridge_path)
+             .stdin(std::process::Stdio::piped())
+             .stdout(std::process::Stdio::piped())
+             .stderr(std::process::Stdio::piped())
+@@ -209,17 +301,14 @@ pub type McpState = Arc<Mutex<Option<Arc<Bridge>>>>;
+ 
+ fn get_default_config() -> HashMap<String, McpServerConfig> {
+     let mut config = HashMap::new();
+-    let home_dir = dirs::home_dir()
+-        .map(|p| p.to_string_lossy().to_string())
+-        .unwrap_or_else(|| "/tmp".to_string());
+-    let projects_dir = format!("{}/Projects", home_dir);
+ 
+-    // Auto-add qwen-core (28 tools + 3 prompts) - runs from local ~/Projects/qwen-core
++    // qwen-core: file operations, search and shell tools (28 tools + 3 prompts).
++    let (command, args) = builtin_server("qwen-core", "src/index.ts", vec![]);
+     config.insert(
+         "qwen-core".to_string(),
+         McpServerConfig {
+-            command: "npx".to_string(),
+-            args: vec!["-y".to_string(), "qwen-core".to_string()],
++            command,
++            args,
+             transport_type: Some("stdio".to_string()),
+             source: Some("official".to_string()),
+             from_: Some("builtin".to_string()),
+@@ -228,30 +317,31 @@ fn get_default_config() -> HashMap<String, McpServerConfig> {
+         },
+     );
+ 
++    let (command, args) = builtin_server(
++        "@modelcontextprotocol/server-filesystem",
++        "dist/index.js",
++        filesystem_dirs(),
++    );
+     config.insert(
+         "Filesystem".to_string(),
+         McpServerConfig {
+-            command: "npx".to_string(),
+-            args: vec![
+-                "-y".to_string(),
+-                "@modelcontextprotocol/server-filesystem".to_string(),
+-                home_dir,
+-                "/tmp".to_string(),
+-                projects_dir,
+-            ],
++            command,
++            args,
+             transport_type: Some("stdio".to_string()),
+             ..Default::default()
+         },
+     );
+ 
++    let (command, args) = builtin_server(
++        "@modelcontextprotocol/server-sequential-thinking",
++        "dist/index.js",
++        vec![],
++    );
+     config.insert(
+         "Sequential-Thinking".to_string(),
+         McpServerConfig {
+-            command: "npx".to_string(),
+-            args: vec![
+-                "-y".to_string(),
+-                "@modelcontextprotocol/server-sequential-thinking".to_string(),
+-            ],
++            command,
++            args,
+             transport_type: Some("stdio".to_string()),
+             ..Default::default()
+         },
+@@ -265,36 +355,33 @@ fn normalize_config(
+ ) -> HashMap<String, McpServerConfig> {
+     if cfg!(target_os = "linux") {
+         if let Some(fs_config) = config.get_mut("Filesystem") {
+-            let home_dir = dirs::home_dir()
+-                .map(|p| p.to_string_lossy().to_string())
+-                .unwrap_or_else(|| "/tmp".to_string());
+-            let projects_dir = format!("{}/Projects", home_dir);
++            let home_dir = dirs::home_dir().map(|p| p.to_string_lossy().to_string());
+ 
+-            // Replace macOS /Users paths with Linux home dir
++            // Replace macOS /Users paths with the Linux home dir, then drop
++            // directories that don't exist here, such as another user's home
++            // copied from someone else's setup: the server refuses to start
++            // with a missing one.
+             fs_config.args = fs_config
+                 .args
+                 .iter()
+-                .map(|arg| {
+-                    if arg == "/Users" || arg.starts_with("/Users/") {
+-                        home_dir.clone()
+-                    } else {
+-                        arg.clone()
+-                    }
++                .filter_map(|arg| {
++                    let arg = match &home_dir {
++                        Some(home) if arg == "/Users" || arg.starts_with("/Users/") => home.clone(),
++                        _ => arg.clone(),
++                    };
++                    let is_missing_dir = arg.starts_with('/')
++                        && !arg.ends_with(".js")
++                        && !arg.ends_with(".mjs")
++                        && !Path::new(&arg).exists();
++                    (!is_missing_dir).then_some(arg)
+                 })
+                 .collect();
+ 
+-            // Ensure home and projects dirs are present
+-            let has_home = fs_config.args.iter().any(|a| a == &home_dir);
+-            let has_projects = fs_config.args.iter().any(|a| a == &projects_dir);
+-            if !has_home {
+-                fs_config.args.push(home_dir.clone());
+-            }
+-            if !has_projects {
+-                fs_config.args.push(projects_dir);
+-            }
+-            // Always include /tmp
+-            if !fs_config.args.iter().any(|a| a == "/tmp") {
+-                fs_config.args.push("/tmp".to_string());
++            // Ensure the user's own directories are present.
++            for dir in filesystem_dirs() {
++                if !fs_config.args.iter().any(|a| a == &dir) {
++                    fs_config.args.push(dir);
++                }
+             }
+         }
+     }
+@@ -515,13 +602,19 @@ pub async fn mcp_client_update_config(
+         }
+     }
+ 
+-    // Auto-add qwen-core if not present (ensures it's always available)
+-    if !merged.contains_key("qwen-core") {
+-        let defaults = get_default_config();
+-        if let Some(qwen_core) = defaults.get("qwen-core") {
+-            log::info!("[MCP] Auto-adding qwen-core (default server)");
+-            merged.insert("qwen-core".to_string(), qwen_core.clone());
+-        }
++    // qwen-core is built in: always run the bundled copy, whatever command
++    // the page sends for it (the page's own entry is `npx -y qwen-core`), and
++    // keep only whether it is turned off.
++    if let Some(qwen_core) = get_default_config().remove("qwen-core") {
++        let disabled = merged.get("qwen-core").map(|c| c.disabled).unwrap_or(false);
++        log::info!("[MCP] Using the built-in qwen-core server");
++        merged.insert(
++            "qwen-core".to_string(),
++            McpServerConfig {
++                disabled,
++                ..qwen_core
++            },
++        );
+     }
+ 
+     log::info!(
+@@ -581,6 +674,36 @@ pub async fn mcp_client_update_config(
+ mod tests {
+     use super::*;
+ 
++    #[test]
++    fn test_filesystem_dirs_follow_this_user() {
++        let home = dirs::home_dir().unwrap().to_string_lossy().to_string();
++        let mut config = HashMap::new();
++        config.insert(
++            "Filesystem".to_string(),
++            McpServerConfig {
++                command: "npx".to_string(),
++                args: vec![
++                    "-y".to_string(),
++                    "@modelcontextprotocol/server-filesystem".to_string(),
++                    "/home/someone-else-entirely".to_string(),
++                    "/Users/someone/Projects".to_string(),
++                ],
++                ..Default::default()
++            },
++        );
++
++        let args = normalize_config(config).remove("Filesystem").unwrap().args;
++        assert!(!args.iter().any(|a| a.contains("someone")), "another user's dirs are dropped: {args:?}");
++        assert!(args.contains(&home), "this user's home is allowed: {args:?}");
++        assert!(args.iter().all(|a| !a.starts_with('/') || Path::new(a).exists()), "every dir exists: {args:?}");
++    }
++
++    #[test]
++    fn test_bridge_found_without_build_machine_paths() {
++        let dir = app_dir().expect("mcp-bridge.mjs is found");
++        assert!(dir.join("mcp-bridge.mjs").is_file());
++    }
++
+     #[tokio::test]
+     async fn test_bridge_filesystem() {
+         let bridge = Bridge::new().await.expect("Failed to start bridge");
+@@ -609,6 +732,31 @@ mod tests {
+         assert!(!tools.is_empty(), "Should have filesystem tools");
+     }
+ 
++    #[tokio::test]
++    async fn test_bridge_qwen_core() {
++        let bridge = Bridge::new().await.expect("Failed to start bridge");
++
++        let config = get_default_config();
++        let qwen_core = &config["qwen-core"];
++        assert_eq!(qwen_core.command, "node", "qwen-core runs from the bundled copy");
++        bridge
++            .send("updateConfig", serde_json::json!({ "config": config }))
++            .await
++            .expect("Failed to update config");
++
++        let result = bridge
++            .send("listTools", serde_json::json!({ "serverName": "qwen-core" }))
++            .await
++            .expect("Failed to list tools");
++
++        let tools = result
++            .get("tools")
++            .and_then(|t| t.as_array())
++            .expect("No tools");
++        println!("qwen-core tools: {}", tools.len());
++        assert!(!tools.is_empty(), "Should have qwen-core tools");
++    }
++
+     #[tokio::test]
+     async fn test_bridge_sequential_thinking() {
+         let bridge = Bridge::new().await.expect("Failed to start bridge");
+diff --git a/tauri.conf.json b/tauri.conf.json
+index d819b18..103b77e 100644
+--- a/tauri.conf.json
++++ b/tauri.conf.json
+@@ -17,6 +17,7 @@
+     "createUpdaterArtifacts": true,
+     "targets": "all",
+     "resources": [
++      "mcp-bridge.mjs",
+       "mcp-proxy-server.js"
+     ],
+     "icon": [

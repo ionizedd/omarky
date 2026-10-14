@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Qwen Studio
+Comment=Qwen chat with local MCP tools
+Exec=env WEBKIT_DISABLE_COMPOSITING_MODE=1 WEBKIT_DISABLE_DMABUF_RENDERER=1 /usr/bin/qwen-studio
+Icon=qwen-studio
+Terminal=false
+Type=Application
+Categories=Network;Chat;
+StartupWMClass=qwen-studio

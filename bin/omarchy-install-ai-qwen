@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# omarchy:summary=Build and install Qwen Studio, the Qwen chat desktop app, with its MCP tools wired to your account
+# omarchy:requires-sudo=true
+
+set -euo pipefail
+
+if (( EUID == 0 )); then
+  echo "Run this command as your desktop user, without sudo." >&2
+  exit 1
+fi
+
+# Upstream's release builds look for their MCP bridge in the developer's own
+# checkout and leave an unauthenticated control socket open on the network, so
+# Qwen Studio is built from source here with the fixes in the PKGBUILD.
+build_dir=$(mktemp -d)
+trap 'rm -rf "$build_dir"' EXIT
+
+cp -r "$OMARCHY_PATH/default/pkgbuilds/qwen-studio/." "$build_dir"
+cd "$build_dir"
+
+echo "Building Qwen Studio from source. This takes a few minutes..."
+# -s installs the build tools, -r removes them again afterwards, -i installs
+# the package.
+makepkg -sri --noconfirm
+
+echo "Opening Qwen Studio..."
+setsid uwsm-app -- qwen-studio.desktop >/dev/null 2>&1 &
+
+echo ""
+echo "Qwen Studio has been installed."

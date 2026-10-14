@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# omarchy:summary=Remove Qwen Studio along with its sign-in, settings, and caches.
+# omarchy:requires-sudo=true
+
+# -u so an unset HOME is an error rather than a set of rm -rf paths rooted at /.
+set -euo pipefail
+
+# The app rewrites its settings for as long as it runs.
+pkill -x qwen-studio || true
+
+omarchy-pkg-drop qwen-studio
+
+# Settings (including MCP servers) live under the app name; the web view's
+# sign-in and storage live under the app identifier.
+rm -rf \
+  "$HOME/.config/qwen-studio" \
+  "$HOME/.local/share/com.qwen.studio" \
+  "$HOME/.cache/com.qwen.studio"
+
+echo ""
+echo "Qwen Studio has been removed."
