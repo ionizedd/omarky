@@ -44,23 +44,11 @@ You can start Grok using `Super + Shift + Alt + A`.
 
 You can start WhatsApp using `Super + Shift + Alt + G`.
 
-## Google apps
-
-Google Messages, Google Photos, Google Maps, and Google Contacts are all included as web apps too.
-
-You can start Google Messages using `Super + Shift + Ctrl + G`, Google Photos using `Super + Shift + P`, and Google Maps using `Super + Shift + S`. Google Contacts is available through the app launcher (`Super + Space`).
-
 ## X
 
 X is where news break.
 
 You can start X using `Super + Shift + X` and go straight to writing a new post with `Super + Shift + Alt + X`.
-
-## YouTube
-
-[YouTube](https://youtube.com/) is the most popular video platform in the world.
-
-You can start YouTube using `Super + Shift + Y`.
 
 ## Zoom
 

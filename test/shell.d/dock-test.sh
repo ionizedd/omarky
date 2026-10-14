@@ -129,7 +129,7 @@ if omarchy_dock position diagonal 2>/dev/null; then
 fi
 pass "dock position is set and read through omarchy-dock"
 
-[[ $(omarchy_dock pinned | paste -sd " ") == "org.gnome.Nautilus firefox foot omacalc omawrite X YouTube" ]] || fail "dock pins start from the defaults"
+[[ $(omarchy_dock pinned | paste -sd " ") == "org.gnome.Nautilus firefox foot omacalc omawrite X" ]] || fail "dock pins start from the defaults"
 omarchy_dock unpin spotify >/dev/null
 omarchy_dock pin com.example.App.desktop >/dev/null
 omarchy_dock pin com.example.App >/dev/null
