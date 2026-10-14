@@ -250,9 +250,8 @@ pass "dictation shortcuts require an installed selection without limiting backen
 
 # Fresh users receive the backend choice through the settings package's skel.
 cp "$ROOT/config/omarchy/defaults/dictation" "$config"
-[[ $(omarchy-default-dictation) == "superwhisper" ]] || fail "fresh users default to Superwhisper"
-printf '%s\n' voxtype > "$config"
-pass "fresh users get Superwhisper as their default backend"
+[[ $(omarchy-default-dictation) == "voxtype" ]] || fail "fresh users default to Voxtype"
+pass "fresh users get Voxtype as their default backend"
 
 lua <<'LUA'
 local root = os.getenv("ROOT")

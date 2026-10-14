@@ -72,6 +72,8 @@ run_first_run_step "install fingerprint setup post-update hook" \
   omarchy-hook-install post-update "$OMARCHY_PATH/install/user/first-run/setup-fingerprint.hook"
 run_first_run_step "install agent setup post-update hook" \
   omarchy-hook-install post-update "$OMARCHY_PATH/install/user/first-run/setup-agent.hook"
+run_first_run_step "install dictation setup post-update hook" \
+  omarchy-hook-install post-update "$OMARCHY_PATH/install/user/first-run/setup-dictation.hook"
 
 run_first_run_step "enable user systemd units" \
   bash "$OMARCHY_PATH/install/user/first-run/enable-user-units.sh"
@@ -93,6 +95,14 @@ run_first_run_step "show welcome notification" \
   bash "$OMARCHY_PATH/install/user/first-run/welcome.sh"
 run_first_run_step "schedule Wi-Fi/update notifications" \
   bash "$OMARCHY_PATH/install/user/first-run/wifi.sh"
+# Offline, the speech model can't download yet. The post-update hook finishes
+# it, so this doesn't hold the rest of first-run back for another login.
+log_first_run "Starting: set up dictation"
+if bash "$OMARCHY_PATH/install/user/first-run/setup-dictation.hook"; then
+  log_first_run "Completed: set up dictation"
+else
+  log_first_run "Deferred: set up dictation (the next update finishes it)"
+fi
 
 if (( first_run_failed == 0 )); then
   omarchy-done mark "$FIRST_RUN_DONE"

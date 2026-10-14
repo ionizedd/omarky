@@ -1,0 +1,12 @@
+#!/bin/bash
+
+set -e
+
+# Fresh installs dictate locally with Voxtype. Its speech model is a download,
+# so first login sets it up when online, and an update (which needs the network
+# anyway) finishes the job when first login was offline.
+if [[ $(omarchy-default-dictation 2>/dev/null) == "voxtype" ]] && omarchy-cmd-present voxtype &&
+  ! omarchy-done check voxtype-setup; then
+  omarchy-install-dictation-voxtype
+  omarchy-done mark voxtype-setup
+fi

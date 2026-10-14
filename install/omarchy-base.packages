@@ -131,7 +131,6 @@ signed
 slurp
 socat
 starship
-superwhisper-bin
 sushi
 system-config-printer
 tesseract
@@ -150,6 +149,7 @@ unzip
 usage
 uwsm
 vi
+voxtype-bin
 whois
 wireless-regdb
 wireplumber

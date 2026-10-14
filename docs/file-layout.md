@@ -322,8 +322,8 @@ first runs `omarchy-provision-user || true` so finalize catches up if it
 never ran, then handles the steps that need a running graphical session
 and/or a working user systemd instance:
 
-- `omarchy-hook-install post-update` for the two shipped hooks
-  (`setup-fingerprint.hook`, `setup-agent.hook`).
+- `omarchy-hook-install post-update` for the three shipped hooks
+  (`setup-fingerprint.hook`, `setup-agent.hook`, `setup-dictation.hook`).
 - `install/user/first-run/enable-user-units.sh` — daemon-reload, then
   `systemctl --user enable --now` the shipped user units (`bt-agent`,
   `omarchy-sleep-lock`, `omarchy-recover-internal-monitor`,
@@ -345,6 +345,10 @@ and/or a working user systemd instance:
   toasts land on a live notification server.
 - `install/user/first-run/wifi.sh` — Wi-Fi/update toasts (waits detached on
   `nm-online` so the update prompt only lands once there is a connection).
+- `install/user/first-run/setup-dictation.hook` — sets up Voxtype, the
+  default dictation backend, including its speech model download. Offline,
+  it doesn't count as a failed step; the same file, installed as a
+  post-update hook, finishes the setup at the next update.
 
 The entire sequence has one idempotency marker:
 `~/.local/state/omarchy/done/first-run-user`, managed by `omarchy-done`.
