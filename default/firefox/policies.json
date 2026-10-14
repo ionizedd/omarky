@@ -3,9 +3,13 @@
     "DontCheckDefaultBrowser": true,
     "DisableTelemetry": true,
     "DisableFirefoxStudies": true,
-    "DisablePocket": true,
     "EncryptedMediaExtensions": {
       "Enabled": false,
+      "Locked": false
+    },
+    "FirefoxHome": {
+      "SponsoredTopSites": false,
+      "SponsoredPocket": false,
       "Locked": false
     },
     "FirefoxSuggest": {
@@ -18,10 +22,6 @@
       "Remove": ["Google"]
     },
     "Preferences": {
-      "apz.overscroll.enabled": {
-        "Value": true,
-        "Status": "default"
-      },
       "browser.safebrowsing.malware.enabled": {
         "Value": false,
         "Status": "default"
@@ -38,12 +38,20 @@
         "Value": false,
         "Status": "default"
       },
+      "browser.safebrowsing.blockedURIs.enabled": {
+        "Value": false,
+        "Status": "default"
+      },
+      "browser.newtabpage.activity-stream.default.sites": {
+        "Value": "",
+        "Status": "default"
+      },
       "geo.provider.network.url": {
         "Value": "https://api.beacondb.net/v1/geolocate",
         "Status": "default"
       },
-      "media.ffmpeg.vaapi.enabled": {
-        "Value": true,
+      "geo.provider.use_geoclue": {
+        "Value": false,
         "Status": "default"
       },
       "media.hardware-video-decoding.force-enabled": {
