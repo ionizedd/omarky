@@ -2,7 +2,7 @@
 
 Omarchy ships with [Firefox](https://www.firefox.com/) as the default browser. It's what `Super + Shift + Return` opens, and it comes set up so Google isn't in the loop: DuckDuckGo is the search engine and Google is removed from the search list, telemetry and studies are off, Google Safe Browsing is off, location lookups go to [BeaconDB](https://beacondb.net/) instead of Google, and DRM video (Widevine, which Firefox downloads from Google) stays off until a site asks for it and you say yes.
 
-If Firefox isn't your taste, you're not stuck with it. Under _Install > Browser_ in the Omarchy menu you'll find Chromium, Chrome, Edge, Brave, Brave Origin, and [Zen](https://zen-browser.app/). Pick one and Omarchy installs it, sets up its policy directory, and applies your current theme to it.
+If Firefox isn't your taste, you're not stuck with it. Under _Install > Browser_ in the Omarchy menu you'll find Chromium, Chrome, Edge, Brave, Brave Origin, and [Zen](https://zen-browser.app/). Pick one and Omarchy installs it, sets up its policy directory, and applies your current theme to it. Chromium also gets a policy that turns off the Google services it would otherwise call on its own (Safe Browsing, usage reports, translation, the online spelling service, password leak checks and error-page suggestions). Chrome, Edge and Brave stay as their makers ship them, since picking one means picking its services. Chromium's search engine is still Google until you change it in its settings.
 
 ## Making one the default
 

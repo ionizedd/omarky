@@ -89,6 +89,17 @@ browser_policy_install_defaults() {
   as_root install -m 644 -o root -g root -T "$policies" "$policy_dir/omarchy.json"
 }
 
+# Chromium alone also gets Omarchy's privacy policy, which turns off the Google
+# services it calls on its own: Safe Browsing, metrics, translation, the
+# spelling service, password leak checks, error-page suggestions and domain
+# reliability reports. Chrome, Edge and Brave users chose their vendor's
+# browser, so their managed directories don't get it.
+browser_policy_install_chromium_privacy() {
+  local policy_dir=${1:-/etc/chromium/policies/managed}
+
+  as_root install -m 644 -o root -g root -T "$OMARCHY_PATH/default/chromium/policies/privacy.json" "$policy_dir/privacy.json"
+}
+
 browser_policy_setup_dir() {
   local dir=$1
 

@@ -219,6 +219,8 @@ grep -Fxq 'sudo:install -d -m 0755 -o root -g root /etc/chromium/policies/manage
   fail "Chromium browser installer creates a root-owned managed policy directory"
 grep -Fxq 'sudo:find /etc/chromium/policies/managed -mindepth 1 -maxdepth 1 ! -user root -exec rm -rf -- {} +' "$setup_log" ||
   fail "Chromium browser installer drops non-root files from its policy directory"
+grep -Fxq "sudo:install -m 644 -o root -g root -T $ROOT/default/chromium/policies/privacy.json /etc/chromium/policies/managed/privacy.json" "$setup_log" ||
+  fail "Chromium browser installer turns off Chromium's Google services"
 if grep -E 'groupadd|usermod|omarchy-browser-policy' "$setup_log" >/dev/null; then
   fail "Chromium browser installer does not create a browser-policy group" "$(cat "$setup_log")"
 fi
@@ -315,3 +317,10 @@ if OMARCHY_TEST_INSTALL_FAIL=true omarchy-default-editor --install vim >"$test_t
 fi
 [[ $(omarchy-default-editor) == "$previous_editor" ]] || fail "failed installation preserves the default"
 pass "failed installation preserves the current default"
+
+# Chrome, Edge and Brave users chose their vendor's browser and services, so
+# only Chromium's own managed directory gets the privacy policy.
+mapfile -t privacy_targets < <(grep -rhoE 'browser_policy_install_chromium_privacy [^ ]+' "$ROOT/bin" "$ROOT/install" | awk '{print $2}' | sort -u)
+[[ ${privacy_targets[*]} == "/etc/chromium/policies/managed" ]] ||
+  fail "only Chromium gets the privacy policy" "${privacy_targets[*]}"
+pass "only Chromium's managed policy directory gets the privacy policy"

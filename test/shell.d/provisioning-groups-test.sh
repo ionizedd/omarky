@@ -51,6 +51,8 @@ OMARCHY_INSTALL_USER="" bash -eE "$ROOT/install/config/browser-policy.sh"
   fail "browser-policy group is not created"
 grep -F -- '-d -m 0755 -o root -g root /etc/chromium/policies/managed' "$TMPDIR/install.calls" >/dev/null ||
   fail "browser-policy directory is created root-owned"
+grep -F -- "/default/chromium/policies/privacy.json /etc/chromium/policies/managed/privacy.json" "$TMPDIR/install.calls" >/dev/null ||
+  fail "a fresh install turns off Chromium's Google services in case Chromium is added later"
 pass "deferred provisioning records no privileged groups"
 
 # The same remains true when an install user already exists.

@@ -1,0 +1,10 @@
+{
+  "AlternateErrorPagesEnabled": false,
+  "DomainReliabilityAllowed": false,
+  "MetricsReportingEnabled": false,
+  "PasswordLeakDetectionEnabled": false,
+  "SafeBrowsingProtectionLevel": 0,
+  "SpellCheckServiceEnabled": false,
+  "TranslateEnabled": false,
+  "UrlKeyedAnonymizedDataCollectionEnabled": false
+}

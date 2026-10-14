@@ -56,6 +56,7 @@ chromium)
   omarchy-pkg-add chromium
 
   setup_chromium_policy_directory /etc/chromium/policies/managed
+  browser_policy_install_chromium_privacy /etc/chromium/policies/managed
   copy_chromium_flags ~/.config/chromium-flags.conf
   omarchy-theme-set-browser
   omarchy-lifecycle-dispatch post-install chromium

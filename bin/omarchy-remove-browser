@@ -28,7 +28,7 @@ chromium)
   set_fallback_default_browser chromium.desktop
   omarchy-pkg-drop chromium
   rm -f ~/.config/chromium-flags.conf
-  sudo rm -f /etc/chromium/policies/managed/color.json /etc/chromium/policies/managed/omarchy.json
+  sudo rm -f /etc/chromium/policies/managed/color.json /etc/chromium/policies/managed/omarchy.json /etc/chromium/policies/managed/privacy.json
   ;;
 chrome)
   echo "Removing Chrome..."
