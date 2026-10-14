@@ -538,6 +538,10 @@ declare -A expected_packages=(
   [muse]="$muse_package"
 )
 
+# Claude's extension needs a Chromium-family browser to set up for.
+printf '#!/bin/bash\n' >"$mock_bin/chromium"
+chmod +x "$mock_bin/chromium"
+
 for selection in "${!expected_agents[@]}"; do
   expected=${expected_agents[$selection]}
   : >"$agent_open_log"
@@ -564,6 +568,18 @@ for selection in "${!expected_agents[@]}"; do
     fail "default agent opens $selection after selecting it"
 done
 pass "default agent selects and opens every supported provider and alias"
+
+# Without any Chromium-family browser there is nothing to set the extension up
+# for, so choosing Claude asks for no password and seeds no Web Store records.
+rm -f "$mock_bin/chromium"
+if ! command -v chromium google-chrome-stable microsoft-edge-stable brave brave-origin >/dev/null 2>&1; then
+  : >"$stub_log"
+  OMARCHY_TEST_AGENT_INSTALLED=true omarchy-default-agent claude
+  ! grep -qx claude-extension "$stub_log" || fail "Claude selection skips the extension without a Chromium-family browser"
+  pass "Claude selection skips the browser extension without a Chromium-family browser"
+else
+  skip "a Chromium-family browser is installed here; skipping the no-browser Claude extension check"
+fi
 [[ -f $agent_file && ! -e $test_home/.local/state/omarchy/defaults/agent ]] ||
   fail "default agent stores its selection in Omarchy user config"
 pass "default agent stores its selection in Omarchy user config"

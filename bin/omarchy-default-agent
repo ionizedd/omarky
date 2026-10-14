@@ -90,8 +90,16 @@ if ! agent_install; then
   exit 1
 fi
 
+# Claude's browser extension runs only in Chromium-family browsers, so set it
+# up when one is installed. omarchy-install-browser sets it up for one added
+# later, and a Firefox-only system gets no Web Store records or password prompt.
 if [[ $agent == "claude" ]]; then
-  omarchy-install-chromium-claude 2>/dev/null || true
+  for browser in chromium google-chrome-stable microsoft-edge-stable brave brave-origin; do
+    if omarchy-cmd-present "$browser"; then
+      omarchy-install-chromium-claude 2>/dev/null || true
+      break
+    fi
+  done
 fi
 
 mkdir -p "$(dirname "$agent_file")"

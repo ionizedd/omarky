@@ -30,6 +30,14 @@ link_widevine_cdm() {
   fi
 }
 
+# Choosing Claude as the default agent only sets up its extension for the
+# Chromium-family browsers already installed, so a new one gets it here.
+setup_claude_extension() {
+  if [[ $(omarchy-default-agent) == "claude" ]]; then
+    omarchy-install-chromium-claude || true
+  fi
+}
+
 copy_chromium_flags() {
   mkdir -p ~/.config
   cp -f "$OMARCHY_PATH/config/chromium-flags.conf" "$1"
@@ -51,6 +59,7 @@ chromium)
   copy_chromium_flags ~/.config/chromium-flags.conf
   omarchy-theme-set-browser
   omarchy-lifecycle-dispatch post-install chromium
+  setup_claude_extension
   announce_browser_installed "Chromium"
   ;;
 chrome)
@@ -61,6 +70,7 @@ chrome)
   copy_chromium_flags ~/.config/chrome-flags.conf
   omarchy-theme-set-browser
   omarchy-lifecycle-dispatch post-install chrome
+  setup_claude_extension
   announce_browser_installed "Chrome"
   ;;
 edge)
@@ -71,6 +81,7 @@ edge)
   copy_chromium_flags ~/.config/microsoft-edge-stable-flags.conf
   omarchy-theme-set-browser
   omarchy-lifecycle-dispatch post-install edge
+  setup_claude_extension
   announce_browser_installed "Edge"
   ;;
 brave)
@@ -82,6 +93,7 @@ brave)
   link_widevine_cdm brave-bin
   omarchy-theme-set-browser
   omarchy-lifecycle-dispatch post-install brave
+  setup_claude_extension
   announce_browser_installed "Brave"
   ;;
 brave-origin)
@@ -93,6 +105,7 @@ brave-origin)
   link_widevine_cdm brave-origin-bin
   omarchy-theme-set-browser
   omarchy-lifecycle-dispatch post-install brave-origin
+  setup_claude_extension
   announce_browser_installed "Brave Origin"
   ;;
 firefox)
