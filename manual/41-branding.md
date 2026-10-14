@@ -20,9 +20,10 @@ You can change the logo used for the screensaver under _Style > Screensaver_. It
 
  ![branding-screensaver](images/branding-screensaver.webp)
 
-There are three entries in that menu:
+There are four entries in that menu:
 
 - **Edit Text** opens `~/.config/omarchy/branding/screensaver.txt` in your editor. Type or paste whatever you like — ASCII art, your name, a rude word. Save and quit, and the screensaver fires up immediately so you can see it.
+- **Set Name** asks for a name, draws it in the same font as the Omarchy wordmark, and shows you the result. It starts from the name you used last, or your account's name the first time. The name is kept in `~/.config/omarchy/branding/name`, so you can change it by running the entry again or from the terminal with `omarchy branding screensaver name veran`.
 - **Set From Image** opens a file picker for a png or svg, converts it to ASCII, and shows you the result. Logos with a clear silhouette work far better than photos.
 - **Restore Default** puts the Omarchy logo back.
 

@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# omarchy:summary=Edit, set, or reset screensaver branding
+# omarchy:summary=Edit, set, or reset screensaver branding, or show a name
 # omarchy:group=branding
 # omarchy:name=screensaver
-# omarchy:args=<image|text|reset>
-# omarchy:examples=omarchy branding screensaver image | omarchy branding screensaver text | omarchy branding screensaver reset
+# omarchy:args=<image|text|name|reset> [name]
+# omarchy:examples=omarchy branding screensaver image | omarchy branding screensaver text | omarchy branding screensaver name veran | omarchy branding screensaver reset
 
 set -euo pipefail
 
@@ -18,11 +18,34 @@ image)
 text)
   omarchy-launch-editor ~/.config/omarchy/branding/screensaver.txt >/dev/null 2>&1 && omarchy-launch-screensaver force >/dev/null 2>&1
   ;;
+name)
+  name_file=~/.config/omarchy/branding/name
+  name="${*:2}"
+
+  if [[ -z $name ]]; then
+    # Offer the saved name, else the account's full name, else the login name.
+    if [[ -f $name_file ]]; then
+      default=$(<"$name_file")
+    else
+      default=$(getent passwd "$USER" | cut -d: -f5 | cut -d, -f1)
+    fi
+    name=$(gum input --prompt "Screensaver name> " --value "${default:-$USER}") || exit 1
+  fi
+
+  # Render to a scratch file so a name with nothing drawable leaves the current art alone.
+  art=$(mktemp)
+  trap 'rm -f "$art"' EXIT
+  omarchy-ascii "$name" >"$art"
+  mkdir -p ~/.config/omarchy/branding
+  cp "$art" ~/.config/omarchy/branding/screensaver.txt
+  printf '%s\n' "$name" >"$name_file"
+  omarchy-launch-screensaver force >/dev/null 2>&1
+  ;;
 reset)
   cp "$OMARCHY_PATH/logo.txt" ~/.config/omarchy/branding/screensaver.txt && omarchy-launch-screensaver force >/dev/null 2>&1
   ;;
 *)
-  echo "Usage: omarchy-branding-screensaver <image|text|reset>" >&2
+  echo "Usage: omarchy-branding-screensaver <image|text|name|reset> [name]" >&2
   exit 1
   ;;
 esac
