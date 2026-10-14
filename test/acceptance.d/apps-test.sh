@@ -35,7 +35,7 @@ launch_and_verify() {
 # test separately verifies the complete core package manifest.
 # name|command|window class regex|launch timeout
 apps='terminal|foot|^foot$
-browser|chromium --new-window|(?i)chromium
+browser|firefox --new-window|(?i)firefox
 neovim|xdg-terminal-exec --app-id=org.omarchy.nvim nvim|org.omarchy.nvim
 writer|omawrite|(?i)omawrite'
 

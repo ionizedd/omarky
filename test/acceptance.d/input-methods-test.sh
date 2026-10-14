@@ -95,6 +95,16 @@ ApplicationWindow {
 }
 QML
 
+# Firefox is the default browser. A throwaway profile that skips the first-run
+# tabs keeps the entry page the focused one.
+mkdir -p "$work/firefox"
+cat > "$work/firefox/user.js" <<'JS'
+user_pref("browser.aboutwelcome.enabled", false);
+user_pref("browser.startup.homepage_override.mstone", "ignore");
+user_pref("datareporting.policy.dataSubmissionPolicyBypassNotification", true);
+user_pref("startup.homepage_welcome_url", "");
+JS
+
 cat > "$work/omarchy-ime-entry.html" <<'HTML'
 <!doctype html><meta charset="utf-8"><title>Browser input test</title>
 <input autofocus style="font-size:32px;width:90%" aria-label="Input test">
@@ -155,7 +165,7 @@ for method in mozc hangul pinyin chewing; do
     case "$toolkit" in
       gtk) command="python $work/entry.py"; class='^org\.omarchy\.ime-test-gtk$' ;;
       qt) command="qml6 $work/entry.qml"; class='^org\.qt-project\.qml$' ;;
-      browser) command="chromium --user-data-dir=$work/chromium --no-first-run --app=file://$work/omarchy-ime-entry.html"; class='^chrome-.*_omarchy-ime-entry\.html-Default$' ;;
+      browser) command="firefox --new-instance --profile $work/firefox file://$work/omarchy-ime-entry.html"; class='^firefox$' ;;
     esac
     launch_app "uwsm app -- $command"
     wait_until "$method $toolkit opens" 30 window_present "$class"
