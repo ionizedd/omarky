@@ -10,7 +10,7 @@
 # - Release builds no longer load tauri-plugin-mcp-bridge, which opens an
 #   unauthenticated WebSocket on every network interface (0.0.0.0:9223) that
 #   can run JavaScript in the app.
-# - MCP commands are available to chat.qwen.ai only, not to every Alibaba
+# - MCP and settings commands are available to chat.qwen.ai only, not to every Alibaba
 #   domain the app allows for sign-in.
 # - The built-in updater stays off: pacman updates the package.
 #
@@ -31,7 +31,7 @@ source=("$pkgname::git+https://github.com/youssefvdel/qwen-studio.git#commit=$_c
         'qwen-studio-fixes.patch'
         'qwen-studio.desktop')
 sha256sums=('SKIP'
-            'b1d0591011f9944192f60e26d4043563759e555b4cf7eafd24abb65223113d08'
+            '980d990fda39ab35ab3d984544fdaf9d76760b5762501ea451e09c9a4a893e21'
             '6a8afcf9fee84190b37fe8de57b1d0a948dea3521a8016e10c8f774cccd88210')
 
 prepare() {

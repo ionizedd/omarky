@@ -1,10 +1,10 @@
 Entropy fixes for Qwen Studio 8b1451b0d65f, see the PKGBUILD header.
 
 diff --git a/capabilities/default.json b/capabilities/default.json
-index 5fe8e29..f42f2f3 100644
+index 5fe8e29..5865ce1 100644
 --- a/capabilities/default.json
 +++ b/capabilities/default.json
-@@ -25,12 +25,6 @@
+@@ -25,14 +25,7 @@
      "fs:allow-document-read-recursive",
      "fs:allow-download-read-recursive",
      "store:default",
@@ -15,21 +15,28 @@ index 5fe8e29..f42f2f3 100644
 -    "mcp-client-get-config",
 -    "mcp-client-update-config",
      "window-commands",
-     "settings-commands",
+-    "settings-commands",
      "mcp-bridge:default",
+     "clipboard-manager:default",
+     "clipboard-manager:allow-read-text",
 diff --git a/capabilities/mcp.json b/capabilities/mcp.json
 new file mode 100644
-index 0000000..6341d47
+index 0000000..9823d95
 --- /dev/null
 +++ b/capabilities/mcp.json
-@@ -0,0 +1,17 @@
+@@ -0,0 +1,23 @@
 +{
 +  "$schema": "../gen/schemas/desktop-schema.json",
 +  "identifier": "mcp",
-+  "description": "Local MCP servers, for the Qwen chat page only. An MCP config names a command to run on this computer, so the other remote sites in the default capability (sign-in pages on Alibaba domains) don't get these.",
-+  "windows": ["main", "window-*"],
++  "description": "Local MCP servers and app settings, for the Qwen chat page only. An MCP config names a command to run on this computer, and the settings commands can write one into settings.json, so the other remote sites in the default capability (sign-in pages on Alibaba domains) get neither.",
++  "windows": [
++    "main",
++    "window-*"
++  ],
 +  "remote": {
-+    "urls": ["https://chat.qwen.ai"]
++    "urls": [
++      "https://chat.qwen.ai"
++    ]
 +  },
 +  "permissions": [
 +    "mcp-client-connect",
@@ -37,7 +44,8 @@ index 0000000..6341d47
 +    "mcp-client-tool-list",
 +    "mcp-client-tool-call",
 +    "mcp-client-get-config",
-+    "mcp-client-update-config"
++    "mcp-client-update-config",
++    "settings-commands"
 +  ]
 +}
 diff --git a/src/lib.rs b/src/lib.rs
