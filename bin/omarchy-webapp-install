@@ -88,7 +88,8 @@ fetch_site_icon() {
   origin=$(sed -E 's|^(https?://[^/]+).*|\1|' <<<"$site_url")
 
   # Prefer the site's own high-res icon (apple-touch-icon is typically 180px+),
-  # then the well-known path, then Google's favicon service as a last resort.
+  # then the well-known path, then the site's plain favicon as a last resort, so
+  # no third-party icon service learns which sites get installed.
   page=$(curl -fsSL --max-time 5 "$site_url" 2>/dev/null | head -c 100000 | tr '\n' ' ')
   icon_url=$(grep -oiE "<link[^>]*rel=[\"'][^\"']*apple-touch-icon[^\"']*[\"'][^>]*>" <<<"$page" |
     grep -oiE "href=[\"'][^\"']+" | head -1 | sed -E "s/^href=[\"']//")
@@ -102,7 +103,7 @@ fetch_site_icon() {
 
   { [[ -n $icon_url ]] && download_icon "$icon_url" "$dest"; } ||
     download_icon "$origin/apple-touch-icon.png" "$dest" ||
-    download_icon "https://www.google.com/s2/favicons?domain=${site_url}&sz=256" "$dest"
+    download_icon "$origin/favicon.ico" "$dest"
 }
 
 desktop_string_escape() {
