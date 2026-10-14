@@ -58,3 +58,8 @@ grep -q '^FallbackDNS=' etc/systemd/resolved.conf.d/30-fallback-dns.conf &&
   ! grep -E '^FallbackDNS=.*(8\.8\.|dns\.google|2001:4860)' etc/systemd/resolved.conf.d/30-fallback-dns.conf ||
   fail "the fallback DNS servers leave Google out"
 pass "the fallback DNS servers leave Google out"
+
+grep -q '^FallbackNTP=' etc/systemd/timesyncd.conf.d/30-fallback-ntp.conf &&
+  ! grep -E '^FallbackNTP=.*google' etc/systemd/timesyncd.conf.d/30-fallback-ntp.conf ||
+  fail "the fallback time servers leave Google out"
+pass "the fallback time servers leave Google out"
