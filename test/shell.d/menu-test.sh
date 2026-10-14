@@ -327,9 +327,10 @@ assertEqual(
   'menu asks the same presence question it used to hide the row with'
 )
 // A guard can still be about something other than having the software: no
-// Chromium at all means no account to wire up, and that row stays hidden.
+// Chromium at all means no account to wire up, and that row stays hidden. The
+// flags file alone doesn't prove it, since every new home gets one from skel.
 assert(
-  defaultById['install.service.chromium-account'].when === '[[ -f ~/.config/chromium-flags.conf ]]'
+  defaultById['install.service.chromium-account'].when === 'omarchy-cmd-present chromium && [[ -f ~/.config/chromium-flags.conf ]]'
     && defaultById['install.service.chromium-account'].disabled.includes('oauth2-client-id'),
   'menu keeps hiding Chromium Account without Chromium, and dims it once the account is set up'
 )

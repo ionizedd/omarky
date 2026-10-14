@@ -83,6 +83,16 @@ grep -Fx '^chromium.*$' "$focus_log" >/dev/null ||
 
 pass "browser launcher follows opened links to the browser workspace"
 
+rm -f "$focus_log"
+HOME="$test_home" PATH="$mock_bin:$PATH" HYPRLAND_INSTANCE_SIGNATURE=test \
+  OMARCHY_TEST_BROWSER_LAUNCH="$launch_log" OMARCHY_TEST_BROWSER_FOCUS="$focus_log" \
+  bash "$ROOT/bin/omarchy-launch-browser" --new-window "https://example.test/webapp"
+
+grep -F -- '--new-window https://example.test/webapp' "$launch_log" >/dev/null ||
+  fail "browser launcher passes a new-window URL through"
+[[ ! -e $focus_log ]] || fail "a new-window launch opens on the current workspace instead of jumping to the browser"
+pass "a new-window launch opens on the current workspace"
+
 rm -f "$launch_log"
 cat >"$mock_bin/omarchy-cmd-browser-handoff" <<'SH'
 #!/bin/bash

@@ -26,14 +26,19 @@ if ! omarchy-cmd-browser-handoff "$browser_exec" "${@/--private/$private_flag}";
     uwsm-app -- "$browser_exec" "${@/--private/$private_flag}"
 fi
 
+# A URL opens as a tab in the running browser, so bring that window forward. A
+# --new-window launch maps its own window wherever the user is, and options
+# such as --private aren't a URL.
 url=""
+new_window=false
 for argument in "$@"; do
-  if [[ $argument != "--private" ]]; then
+  if [[ $argument == "--new-window" ]]; then
+    new_window=true
+  elif [[ -z $url && $argument != -* ]]; then
     url=$argument
-    break
   fi
 done
 
-if [[ -n $url && -n ${HYPRLAND_INSTANCE_SIGNATURE:-} ]]; then
+if [[ -n $url && $new_window == "false" && -n ${HYPRLAND_INSTANCE_SIGNATURE:-} ]]; then
   omarchy-hyprland-focus-app "^$(basename "$browser_exec" -stable).*$" || true
 fi
