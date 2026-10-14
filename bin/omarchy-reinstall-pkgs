@@ -18,3 +18,11 @@ omarchy-update-pacman -Suu --noconfirm
 default_packages=$(omarchy-pkg-defaults)
 mapfile -t packages <<<"$default_packages"
 omarchy-update-pacman -Syu --noconfirm --needed "${packages[@]}"
+
+# Firefox is a default package, so a reinstall can be what installs it. Give it
+# the policies a fresh install sets up, or it starts with Google's defaults.
+firefox_path="${OMARCHY_FIREFOX_PATH:-/usr/lib/firefox}"
+if [[ -d $firefox_path ]]; then
+  source "$OMARCHY_PATH/install/helpers/browser-policy.sh"
+  browser_policy_setup_firefox_distribution "$firefox_path/distribution"
+fi

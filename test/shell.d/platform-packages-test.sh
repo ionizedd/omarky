@@ -104,7 +104,10 @@ chmod +x "$failing_bin/omarchy-hw-platform"
 ! PATH="$failing_bin:$ROOT/bin:$PATH" omarchy-pkg-defaults >/dev/null 2>&1 || fail "a platform the detector cannot tell is refused"
 pass "an unknown or undetectable platform is refused"
 
-# omarchy-reinstall-pkgs installs the detected platform's set.
+# omarchy-reinstall-pkgs installs the detected platform's set. Point its
+# Firefox step at a path that doesn't exist, so these runs never write the real
+# /usr/lib/firefox/distribution.
+export OMARCHY_FIREFOX_PATH="$work/no-firefox"
 mkdir -p "$work/stubs"
 cat >"$work/stubs/omarchy-update-pacman" <<'SH'
 #!/bin/bash
@@ -150,6 +153,26 @@ if REFRESH_FAILS=1 reinstall_on aarch64; then
 fi
 [[ $(cat "$STUB_LOG") == "refresh " ]] || fail "reinstall runs nothing after a failed refresh" "$(cat "$STUB_LOG")"
 pass "omarchy-reinstall-pkgs stops when the refresh fails"
+
+# With Firefox installed, a reinstall also gives it Omarchy's policies.
+firefox_root="$work/firefox"
+mkdir -p "$firefox_root"
+cat >"$work/stubs/sudo" <<'SH'
+#!/bin/bash
+printf 'sudo %s\n' "$*" >>"$SUDO_LOG"
+SH
+chmod +x "$work/stubs/sudo"
+export SUDO_LOG="$work/sudo.log"
+: >"$SUDO_LOG"
+OMARCHY_FIREFOX_PATH="$firefox_root" reinstall_on x86 || fail "reinstall with Firefox completes" "$(cat "$work/channel.out")"
+if (( EUID == 0 )); then
+  cmp -s "$ROOT/default/firefox/policies.json" "$firefox_root/distribution/policies.json" ||
+    fail "reinstall installs Firefox's policies"
+else
+  grep -Fq "install -m 644 -o root -g root -T $ROOT/default/firefox/policies.json $firefox_root/distribution/policies.json" "$SUDO_LOG" ||
+    fail "reinstall installs Firefox's policies" "$(cat "$SUDO_LOG")"
+fi
+pass "omarchy-reinstall-pkgs gives an installed Firefox its policies"
 
 export STUB_LOG="$work/undetected.log"
 : >"$STUB_LOG"
