@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# omarchy:summary=Install Ollama to run AI models locally, built for the GPU in this computer
+# omarchy:args=[cuda|rocm|cpu]
+# omarchy:examples=omarchy install ai ollama | omarchy install ai ollama cpu
+# omarchy:requires-sudo=true
+
+set -e
+
+# Each acceleration variant provides the same ollama command and service, so
+# pick the one this computer's GPU can use unless a variant is named.
+case ${1:-} in
+cuda) package=ollama-cuda ;;
+rocm) package=ollama-rocm ;;
+cpu) package=ollama ;;
+"")
+  if omarchy-hw-nvidia; then
+    package=ollama-cuda
+  elif omarchy-cmd-present rocminfo; then
+    package=ollama-rocm
+  else
+    package=ollama
+  fi
+  ;;
+*)
+  echo "Usage: omarchy-install-ai-ollama [cuda|rocm|cpu]" >&2
+  exit 1
+  ;;
+esac
+
+echo "Installing Ollama ($package)..."
+omarchy-pkg-add "$package"
+
+# The service serves the local API (127.0.0.1:11434) that agents and apps talk
+# to, so it starts now and on every boot.
+sudo systemctl enable --now ollama.service
+
+echo ""
+echo "Ollama is running. Pull a model with: ollama pull <model>"
