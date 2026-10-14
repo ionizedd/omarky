@@ -406,3 +406,54 @@ pass "upgrade cleanup preserves existing Lazydocker when replacement fails"
 
 grep -Fxq migrate_lazydocker_package "$upgrade_to_quattro" || fail "upgrade invokes the Lazydocker replacement step"
 pass "upgrade invokes the Lazydocker replacement step"
+
+# Chromium is optional on fresh installs (Firefox is the default), but an
+# install that had omarchy-chromium gets the stock package back after the
+# conflict cleanup removes it.
+conflict_body=$(function_body remove_conflicting_legacy_packages)
+chromium_body=$(function_body migrate_chromium_package)
+[[ -n $conflict_body && -n $chromium_body ]] || fail "upgrade has a Chromium replacement step"
+eval "remove_conflicting_legacy_packages() { $conflict_body; }"
+eval "migrate_chromium_package() { $chromium_body; }"
+chromium_calls=""
+package_installed_exact() { [[ $1 == "omarchy-chromium" && $legacy_chromium == "yes" ]]; }
+as_root() {
+  chromium_calls+="root:$*"$'\n'
+  return 0
+}
+mark_packages_explicit() { chromium_calls+="explicit:$*"$'\n'; }
+
+legacy_chromium=no
+legacy_omarchy_chromium=0
+remove_conflicting_legacy_packages
+migrate_chromium_package
+if grep -Fq 'chromium' <<<"$chromium_calls"; then
+  fail "upgrade does not install Chromium for users without omarchy-chromium" "$chromium_calls"
+fi
+pass "upgrade does not install Chromium for users without omarchy-chromium"
+
+legacy_chromium=yes
+legacy_omarchy_chromium=0
+chromium_calls=""
+remove_conflicting_legacy_packages
+migrate_chromium_package
+grep -Fxq 'root:pacman -Rdd --noconfirm omarchy-chromium' <<<"$chromium_calls" ||
+  fail "upgrade still removes the conflicting omarchy-chromium" "$chromium_calls"
+grep -Fxq 'root:pacman -S --needed --noconfirm --ask 4 chromium' <<<"$chromium_calls" ||
+  fail "upgrade replaces omarchy-chromium with chromium" "$chromium_calls"
+grep -Fxq 'explicit:chromium' <<<"$chromium_calls" || fail "upgrade keeps Chromium as an explicit package"
+pass "upgrade replaces omarchy-chromium with the chromium package"
+
+chromium_line=$(grep -n '^migrate_chromium_package$' "$upgrade_to_quattro" | cut -d: -f1)
+conflict_line=$(grep -n '^remove_conflicting_legacy_packages$' "$upgrade_to_quattro" | cut -d: -f1)
+[[ -n $chromium_line && -n $conflict_line ]] && (( conflict_line < chromium_line )) ||
+  fail "upgrade replaces Chromium after the conflict cleanup"
+pass "upgrade replaces Chromium after the conflict cleanup"
+
+# The user setup sets a default browser that exists: Chromium when it is still
+# installed, otherwise Firefox.
+if grep -Fq 'xdg-settings set default-web-browser chromium.desktop' "$upgrade_to_quattro"; then
+  fail "upgrade does not hardcode Chromium as the default browser"
+fi
+grep -Fq 'default_browser=firefox.desktop' "$upgrade_to_quattro" || fail "upgrade falls back to Firefox as the default browser"
+pass "upgrade picks a default browser that is installed"

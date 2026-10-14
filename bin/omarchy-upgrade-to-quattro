@@ -76,6 +76,9 @@ auto_reboot=0
 boot_cmdline_unsafe=0
 kernel_cmdline_root_checked=0
 use_dev_packages=${OMARCHY_UPGRADE_DEV:-0}
+# Set when the conflict cleanup removes omarchy-chromium, so the stock package
+# can replace it: Chromium is no longer a default package.
+legacy_omarchy_chromium=0
 
 while (($#)); do
   case "$1" in
@@ -746,6 +749,9 @@ remove_conflicting_legacy_packages() {
   local pkg
   for pkg in "${conflicting_packages[@]}"; do
     if package_installed_exact "$pkg"; then
+      if [[ $pkg == "omarchy-chromium" ]]; then
+        legacy_omarchy_chromium=1
+      fi
       # Some pre-quattro meta packages depend on these retired/default packages. We
       # intentionally break those old dependency edges before installing the
       # Omarchy quattro meta, otherwise pacman prompts to remove conflicts (for
@@ -774,6 +780,19 @@ migrate_lazydocker_package() {
       mark_packages_explicit lazydocker
     else
       warn "Could not replace lazydocker-bin; leaving existing Lazydocker installed."
+    fi
+  fi
+}
+
+# Chromium is optional on fresh installs, where Firefox is the default, but an
+# install that had omarchy-chromium keeps a Chromium for its existing profile.
+migrate_chromium_package() {
+  if (( legacy_omarchy_chromium )); then
+    log "Replacing omarchy-chromium with the chromium package"
+    if as_root pacman -S --needed --noconfirm --ask 4 chromium; then
+      mark_packages_explicit chromium
+    else
+      warn "Could not install chromium; Firefox stays as the browser."
     fi
   fi
 }
@@ -2294,7 +2313,13 @@ if command -v update-desktop-database >/dev/null 2>&1; then
   update-desktop-database "$HOME/.local/share/applications" >/dev/null 2>&1 || true
 fi
 if command -v xdg-settings >/dev/null 2>&1; then
-  env -u BROWSER XDG_CURRENT_DESKTOP= xdg-settings set default-web-browser chromium.desktop || true
+  # Keep Chromium for an install that still has it; otherwise use Firefox.
+  if command -v chromium >/dev/null 2>&1; then
+    default_browser=chromium.desktop
+  else
+    default_browser=firefox.desktop
+  fi
+  env -u BROWSER XDG_CURRENT_DESKTOP= xdg-settings set default-web-browser "$default_browser" || true
 fi
 if command -v xdg-mime >/dev/null 2>&1; then
   xdg-mime default HEY.desktop x-scheme-handler/mailto || true
@@ -2436,6 +2461,7 @@ configure_snapper_policy
 configure_lock_authentication
 migrate_1password_beta_package
 migrate_lazydocker_package
+migrate_chromium_package
 cleanup_legacy_user_paths
 apply_system_transition
 apply_user_transition
