@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# omarchy:summary=Launch a URL as a web app in the default supported browser
+# omarchy:summary=Open a URL as a web app window in a Chromium-family browser, or in a new window of the default browser when none is installed
 # omarchy:args=<url>
 
 browser=$(omarchy-cmd-default-browser)

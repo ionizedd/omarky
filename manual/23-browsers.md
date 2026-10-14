@@ -6,7 +6,7 @@ If Firefox isn't your taste, you're not stuck with it. Under _Install > Browser_
 
 ## Making one the default
 
-Installing a browser doesn't promote it. Once it's on the machine, go to _Setup > Defaults > Browser_ and pick it — the menu only lists browsers you actually have installed, and marks the current default with a check.
+Installing a browser doesn't promote it. Once it's on the machine, go to _Setup > Defaults > Browser_ and pick it. The menu lists every supported browser and marks the current default with a check; picking one that isn't installed yet installs it first.
 
 From the terminal it's:
 
@@ -30,7 +30,7 @@ These are Chromium-family only. Firefox and Zen don't get them.
 
 ## Firefox and Zen
 
-Firefox and Zen are a different family, so they get different treatment: Omarchy installs a policies file (`/usr/lib/firefox/distribution/policies.json`) with the privacy defaults above and native Wayland settings for fractional scaling and smooth trackpad scrolling. The search, Safe Browsing, location, New Tab and DRM settings are defaults rather than locks, so you can change them in Settings or `about:config`; telemetry and studies stay off.
+Firefox and Zen are a different family, so they get different treatment: Omarchy installs a policies file (`/usr/lib/firefox/distribution/policies.json` for Firefox, `/opt/zen-browser/distribution/policies.json` for Zen) with the privacy defaults above and native Wayland settings for fractional scaling and smooth trackpad scrolling. The search, Safe Browsing, location, New Tab and DRM settings are defaults rather than locks, so you can change them in Settings or `about:config`; telemetry and studies stay off.
 
 They don't get the Chromium extensions above, and they're not themed by Omarchy, so those parts of the experience are yours to set up.
 

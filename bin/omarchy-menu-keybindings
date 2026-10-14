@@ -352,8 +352,8 @@ dynamic_bindings() {
 
 # Hardcoded bindings, like the copy-url extension and such
 static_bindings() {
-  echo "SHIFT ALT,L,Copy URL from Web App,sendshortcut,SHIFT ALT,L,"
-  echo "SHIFT ALT,D,Download Video from Web App,sendshortcut,SHIFT ALT,D,"
+  echo "SHIFT ALT,L,Copy URL (Chromium browsers and their web apps),sendshortcut,SHIFT ALT,L,"
+  echo "SHIFT ALT,D,Download Video (Chromium browsers),sendshortcut,SHIFT ALT,D,"
 }
 
 # Actions Omarchy binds to a second chord meant as an alternative, named one at

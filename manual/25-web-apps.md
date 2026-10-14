@@ -2,7 +2,7 @@
 
 You can add your own web apps using _Install > Web App_ in the Omarchy menu (`Super + Space`). It'll ask you for the app name, app URL, and the icon URL, if it can't retrieve it via favicon. You can get great PNG icons for many popular web apps on [Dashboard Icons](https://dashboardicons.com).
 
-They'll then be accessible through the app launcher (`Super + Space`), and use the beautiful frameless web-app window.
+They'll then be accessible through the app launcher (`Super + Space`). With a Chromium-family browser installed (_Install > Browser_ > Chromium, Chrome, Brave or Edge) they use the beautiful frameless web-app window; with only Firefox, the default, they open in a new Firefox window instead (see [Browsers](23-browsers.md)).
 
 If you wish to remove a web app, just go to _Remove > Web App_ in the Omarchy menu.
 
@@ -10,7 +10,7 @@ It's best if you log into all your accounts using a regular browser before using
 
 All the keyboard hotkeys for these web apps can be changed in `~/.config/hypr/bindings.lua`.
 
-When you're in a web app, you can copy the current URL to the clipboard using `Shift + Alt + L`.
+When you're in a web app opened in a Chromium-family browser, you can copy the current URL to the clipboard using `Shift + Alt + L`.
 
 By default, Omarchy already ships with an assortment of default apps:
 
@@ -76,4 +76,4 @@ To keep work sign-ins separate, append a browser data directory to each launcher
 Exec=omarchy-launch-webapp "https://teams.cloud.microsoft/" --user-data-dir=/absolute/path/to/work-browser-profile
 ```
 
-Replace the example directory with an absolute path of your choice and use the same path for all six launchers to share work sign-ins between them. The web apps use Omarchy's selected supported browser, falling back to Chromium when the default browser is unsupported, and to a new window of the default browser when Chromium isn't installed.
+Replace the example directory with an absolute path of your choice and use the same path for all six launchers to share work sign-ins between them. `--user-data-dir` (like other browser flags a launcher passes) only takes effect in a Chromium-family browser; the Firefox fallback opens the plain URL in your normal Firefox profile. The web apps use Omarchy's selected supported browser, falling back to Chromium when the default browser is unsupported, and to a new window of the default browser when Chromium isn't installed.

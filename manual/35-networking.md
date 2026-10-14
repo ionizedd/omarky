@@ -12,7 +12,7 @@ If you actually need the password itself, `omarchy network password <interface>`
 
 ## DNS
 
-Omarchy uses whatever DNS your network hands out over DHCP. You can override that for the whole machine under _Setup > Network > DNS_, where Cloudflare and Google are one click away. Pick _Custom_ to type in your own servers.
+Omarchy uses whatever DNS your network hands out over DHCP. If the network hands out none, it falls back to [Quad9](https://quad9.net/) only, never to Google. You can override that for the whole machine under _Setup > Network > DNS_, where Cloudflare and Google are one click away. Pick _Custom_ to type in your own servers.
 
 From the terminal, `omarchy dns` prints the current provider and `omarchy dns Cloudflare` sets one.
 
