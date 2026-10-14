@@ -23,7 +23,8 @@ if gum confirm "Are you sure you want to restore all preinstalled web apps, TUI 
     omacalc \
     omawrite \
     hype \
-    signed; then
+    signed \
+    claude-desktop; then
     echo -e "\nPreinstalls are still marked as removed. Fix the errors above and try again."
     exit 1
   fi
