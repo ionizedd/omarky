@@ -82,26 +82,37 @@ require_http_url() {
   fi
 }
 
+# The href of the page's first <link> whose rel matches $2, made absolute
+# against the site origin $3.
+page_icon_href() {
+  local page=$1 rel=$2 origin=$3 href
+  href=$(grep -oiE "<link[^>]*rel=[\"'][^\"']*${rel}[^\"']*[\"'][^>]*>" <<<"$page" |
+    grep -oiE "href=[\"'][^\"']+" | sed -E "s/^href=[\"']//" | grep -viE '\.svg([?#]|$)' | head -1)
+
+  case $href in
+  http://* | https://*) ;;
+  //*) href="https:$href" ;;
+  /*) href="$origin$href" ;;
+  ?*) href="$origin/$href" ;;
+  esac
+  printf '%s' "$href"
+}
+
 fetch_site_icon() {
   local site_url="$1" dest="$2"
-  local origin page icon_url
+  local origin page touch_icon declared_icon
   origin=$(sed -E 's|^(https?://[^/]+).*|\1|' <<<"$site_url")
 
   # Prefer the site's own high-res icon (apple-touch-icon is typically 180px+),
-  # then the well-known path, then the site's plain favicon as a last resort, so
-  # no third-party icon service learns which sites get installed.
+  # then the bitmap icon the page declares, then the well-known paths, so no
+  # third-party icon service learns which sites get installed. SVG icons are
+  # skipped: the launcher icon is saved as a PNG.
   page=$(curl -fsSL --max-time 5 "$site_url" 2>/dev/null | head -c 100000 | tr '\n' ' ')
-  icon_url=$(grep -oiE "<link[^>]*rel=[\"'][^\"']*apple-touch-icon[^\"']*[\"'][^>]*>" <<<"$page" |
-    grep -oiE "href=[\"'][^\"']+" | head -1 | sed -E "s/^href=[\"']//")
+  touch_icon=$(page_icon_href "$page" "apple-touch-icon" "$origin")
+  declared_icon=$(page_icon_href "$page" "icon" "$origin")
 
-  case $icon_url in
-  http://* | https://*) ;;
-  //*) icon_url="https:$icon_url" ;;
-  /*) icon_url="$origin$icon_url" ;;
-  ?*) icon_url="$origin/$icon_url" ;;
-  esac
-
-  { [[ -n $icon_url ]] && download_icon "$icon_url" "$dest"; } ||
+  { [[ -n $touch_icon ]] && download_icon "$touch_icon" "$dest"; } ||
+    { [[ -n $declared_icon ]] && download_icon "$declared_icon" "$dest"; } ||
     download_icon "$origin/apple-touch-icon.png" "$dest" ||
     download_icon "$origin/favicon.ico" "$dest"
 }
