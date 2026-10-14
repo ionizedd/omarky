@@ -92,6 +92,8 @@ Omarchy is built on:
 
 Omarchy ships a single `omarchy` CLI that dispatches to all `omarchy-*` binaries via `omarchy <group> <action>`. Always prefer this form — it is self-documenting and stable. The underlying `omarchy-*` binaries still exist on `PATH` and remain safe to read for source.
 
+Run `omarchy system status --json` first to learn the machine's state (version, theme, defaults, audio, battery, network, displays, pending restarts) in one read-only call, instead of probing each piece separately.
+
 ```bash
 # List every documented command and its summary (--all includes hidden commands)
 omarchy commands

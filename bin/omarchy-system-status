@@ -1,0 +1,392 @@
+#!/bin/bash
+
+# omarchy:summary=Print the state of this machine in one read-only call, as text or --json
+# omarchy:group=system
+# omarchy:name=status
+# omarchy:args=[--json]
+
+# One call that answers what this machine is running, so a person or an agent
+# does not have to ask a dozen commands. Everything is read from local state:
+# nothing is changed and nothing leaves the machine. A section whose source is
+# missing, failing or hung is null instead of an error, so the command exits 0;
+# only a bad argument exits 2.
+#
+# Each section function prints one JSON value, and the text form is a rendering
+# of the same object, so the two cannot drift apart.
+
+usage="Usage: omarchy-system-status [--json]"
+timeout_seconds=2
+state_dir=$HOME/.local/state/omarchy
+
+mode="text"
+case $# in
+  0) ;;
+  1)
+    case $1 in
+      --json) mode="json" ;;
+      -h | --help)
+        echo "$usage"
+        exit 0
+        ;;
+      *)
+        echo "$usage" >&2
+        exit 2
+        ;;
+    esac
+    ;;
+  *)
+    echo "$usage" >&2
+    exit 2
+    ;;
+esac
+
+# First line a command prints, or nothing when it is missing, fails or hangs.
+probe() {
+  local output
+
+  output=$(timeout "$timeout_seconds" "$@" 2>/dev/null </dev/null) || return 0
+  printf '%s\n' "${output%%$'\n'*}"
+}
+
+# A JSON string, or null for an empty value.
+json_string() {
+  jq -cn --arg value "$1" 'if $value == "" then null else $value end'
+}
+
+omarchy_section() {
+  local channel
+
+  channel=$(probe omarchy-version-channel)
+  # With no mirror or package channel to match, the helper answers "unknown".
+  if [[ $channel == "unknown" ]]; then
+    channel=""
+  fi
+
+  # The branch is only known to a dev-linked checkout; the helper fails elsewhere.
+  jq -cn \
+    --arg version "$(probe omarchy-version)" \
+    --arg channel "$channel" \
+    --arg branch "$(probe omarchy-version-branch)" \
+    '$ARGS.named | map_values(if . == "" then null else . end)'
+}
+
+platform_section() {
+  json_string "$(probe omarchy-hw-platform)"
+}
+
+theme_section() {
+  local theme
+
+  theme=$(probe omarchy-theme-current)
+  # Without a theme.name file the helper answers "Unknown".
+  if [[ $theme == "Unknown" ]]; then
+    theme=""
+  fi
+  json_string "$theme"
+}
+
+font_section() {
+  json_string "$(probe omarchy-font-current)"
+}
+
+# Each omarchy-default-* helper prints the current setting when run without an
+# argument (an argument would change it), and prints nothing or fails when none
+# is set.
+defaults_section() {
+  jq -cn \
+    --arg browser "$(probe omarchy-default-browser)" \
+    --arg terminal "$(probe omarchy-default-terminal)" \
+    --arg editor "$(probe omarchy-default-editor)" \
+    --arg agent "$(probe omarchy-default-agent)" \
+    --arg dictation "$(probe omarchy-default-dictation)" \
+    '$ARGS.named | map_values(if . == "" then null else . end)'
+}
+
+# wpctl prints "Volume: 0.45", with " [MUTED]" after it while muted. The volume
+# is taken as hundredths of that figure, so there is no float math and no
+# locale decimal separator to trip over.
+audio_section() {
+  local output whole fraction volume muted
+
+  output=$(probe wpctl get-volume @DEFAULT_AUDIO_SINK@)
+  if [[ $output =~ ^Volume:[[:space:]]+([0-9]+)[.,]?([0-9]*) ]]; then
+    whole=${BASH_REMATCH[1]}
+    fraction=${BASH_REMATCH[2]}00
+    volume=$(( 10#$whole * 100 + 10#${fraction:0:2} ))
+
+    if [[ $output == *"[MUTED]"* ]]; then
+      muted=true
+    else
+      muted=false
+    fi
+
+    jq -cn --argjson volume "$volume" --argjson muted "$muted" '{volume: $volume, muted: $muted}'
+  else
+    echo null
+  fi
+}
+
+# The first battery that powers the machine, chosen the way omarchy-battery-present
+# chooses it: by type rather than by name, skipping the Device-scoped batteries of
+# wireless mice and keyboards. Null when there is none.
+battery_section() {
+  local power_supply_path=${OMARCHY_POWER_SUPPLY_PATH:-/sys/class/power_supply}
+  local battery percent status
+
+  for battery in "$power_supply_path"/*; do
+    [[ -r $battery/present && $(<"$battery/present") == "1" ]] || continue
+    [[ -r $battery/type && $(<"$battery/type") == "Battery" ]] || continue
+    [[ -r $battery/scope && $(<"$battery/scope") == "Device" ]] && continue
+
+    percent=""
+    status=""
+    if [[ -r $battery/capacity ]]; then
+      read -r percent <"$battery/capacity"
+    fi
+    # The kernel reports 0 to 100; anything else is a broken driver.
+    if [[ ! $percent =~ ^[0-9]{1,3}$ ]] || (( 10#$percent > 100 )); then
+      percent=""
+    fi
+    if [[ -r $battery/status ]]; then
+      read -r status <"$battery/status"
+    fi
+
+    jq -cn --arg percent "$percent" --arg status "$status" '{
+      percent: (if $percent == "" then null else ($percent | tonumber) end),
+      status: (if $status == "" then null else $status end)
+    }'
+    return
+  done
+
+  echo null
+}
+
+# What NetworkManager already knows about its devices; it asks nothing of the
+# network. Connected means a Wi-Fi or Ethernet device is activated, and the SSID
+# is the Wi-Fi connection's name, the way omarchy-network-status reports it.
+network_section() {
+  local devices device type state connection
+  local connected=false ssid=""
+
+  if devices=$(timeout "$timeout_seconds" nmcli -t --escape no -f DEVICE,TYPE,STATE,CONNECTION device status 2>/dev/null </dev/null); then
+    while IFS=: read -r device type state connection; do
+      # "connected" and "connected (externally)", but not "connecting (...)".
+      [[ $state == connected* ]] || continue
+
+      case $type in
+        wifi)
+          connected=true
+          if [[ -z $ssid && $connection != "--" ]]; then
+            ssid=$connection
+          fi
+          ;;
+        ethernet) connected=true ;;
+      esac
+    done <<<"$devices"
+
+    jq -cn --argjson connected "$connected" --arg ssid "$ssid" '{
+      connected: $connected,
+      ssid: (if $ssid == "" then null else $ssid end)
+    }'
+  else
+    echo null
+  fi
+}
+
+# Null outside a Hyprland session, where hyprctl is missing or has no compositor
+# to ask.
+displays_section() {
+  local monitors
+
+  if monitors=$(timeout "$timeout_seconds" hyprctl monitors -j 2>/dev/null </dev/null); then
+    # Hyprland prints the refresh rate and scale to a couple of decimals ("1.00",
+    # 143.998); hundredths keeps them readable and drops jq's literal "1.00".
+    jq -c 'def hundredths: if type == "number" then ((. * 100 | round) / 100) else null end;
+      map({
+        name,
+        width,
+        height,
+        refresh: (.refreshRate | hundredths),
+        scale: (.scale | hundredths),
+        focused
+      })' <<<"$monitors" 2>/dev/null || echo null
+  else
+    echo null
+  fi
+}
+
+# Rebooting satisfies every marker, but only omarchy-system clears them, so one
+# left from before a plain `systemctl reboot` (or a crash) is stale. A marker
+# counts only when it was set during this boot; without a readable boot or file
+# time, its existence decides.
+marker_current() {
+  local marker=$1 marker_time
+
+  [[ -f $marker ]] || return 1
+  marker_time=$(stat -c %Y "$marker" 2>/dev/null)
+  if [[ $boot_time =~ ^[0-9]+$ && $marker_time =~ ^[0-9]+$ ]] && (( marker_time < boot_time )); then
+    return 1
+  else
+    return 0
+  fi
+}
+
+# The markers omarchy-state set leaves for omarchy-update-restart: reboot-required,
+# and restart-<component>-required for omarchy-restart-<component>.
+pending_section() {
+  local reboot_required file component key value boot_time=""
+  local -a restarts_required=()
+
+  while read -r key value _; do
+    if [[ $key == "btime" ]]; then
+      boot_time=$value
+      break
+    fi
+  done </proc/stat
+
+  if marker_current "$state_dir/reboot-required"; then
+    reboot_required=true
+  else
+    reboot_required=false
+  fi
+
+  for file in "$state_dir"/restart-*-required; do
+    marker_current "$file" || continue
+
+    component=${file##*/}
+    component=${component#restart-}
+    component=${component%-required}
+    if [[ -n $component ]]; then
+      restarts_required+=("$component")
+    fi
+  done
+
+  jq -cn --argjson reboot_required "$reboot_required" '{
+    reboot_required: $reboot_required,
+    restarts_required: $ARGS.positional
+  }' --args "${restarts_required[@]}"
+}
+
+# Null when Ollama is not installed. When it is, the models come from asking the
+# local server, so a stopped or hung server reads as not running with no models.
+ollama_section() {
+  local output name host running=false
+  local -a models=()
+
+  if omarchy-cmd-present ollama; then
+    # The client follows OLLAMA_HOST, which can name another machine; only this
+    # machine's own server is asked.
+    host=${OLLAMA_HOST:-127.0.0.1:11434}
+    if [[ ! $host =~ ^(https?://)?(localhost|127\.[0-9.]+|0\.0\.0\.0|\[::1\])(:[0-9]+)?/?$ ]]; then
+      host=127.0.0.1:11434
+    fi
+
+    if output=$(OLLAMA_HOST=$host timeout "$timeout_seconds" ollama list 2>/dev/null </dev/null); then
+      running=true
+
+      # The first line is the NAME ID SIZE MODIFIED header.
+      {
+        read -r _
+        while read -r name _; do
+          if [[ -n $name ]]; then
+            models+=("$name")
+          fi
+        done
+      } <<<"$output"
+    fi
+
+    jq -cn --argjson running "$running" '{
+      running: $running,
+      models: $ARGS.positional
+    }' --args "${models[@]}"
+  else
+    echo null
+  fi
+}
+
+# A section's JSON value, or null when it printed none, or something that is not
+# exactly one value, so one broken section cannot take the rest down with it.
+section() {
+  local json
+
+  json=$("$1" 2>/dev/null | jq -sc 'if length == 1 then .[0] else null end' 2>/dev/null)
+  printf '%s\n' "${json:-null}"
+}
+
+status_json() {
+  jq -n \
+    --argjson omarchy "$(section omarchy_section)" \
+    --argjson platform "$(section platform_section)" \
+    --argjson theme "$(section theme_section)" \
+    --argjson font "$(section font_section)" \
+    --argjson defaults "$(section defaults_section)" \
+    --argjson audio "$(section audio_section)" \
+    --argjson battery "$(section battery_section)" \
+    --argjson network "$(section network_section)" \
+    --argjson displays "$(section displays_section)" \
+    --argjson pending "$(section pending_section)" \
+    --argjson ollama "$(section ollama_section)" \
+    '{
+      omarchy: $omarchy,
+      platform: $platform,
+      theme: $theme,
+      font: $font,
+      defaults: $defaults,
+      audio: $audio,
+      battery: $battery,
+      network: $network,
+      displays: $displays,
+      pending: $pending,
+      ollama: $ollama
+    }'
+}
+
+# The status object as key: value lines, one per setting and one per display.
+IFS= read -r -d '' text_filter <<'JQ' || true
+def na: . // "n/a";
+def yes_no: if . then "yes" else "no" end;
+def percent: if . == null then "n/a" else "\(.)%" end;
+
+"version: \(.omarchy.version | na)",
+"channel: \(.omarchy.channel | na)",
+"branch: \(.omarchy.branch | na)",
+"platform: \(.platform | na)",
+"theme: \(.theme | na)",
+"font: \(.font | na)",
+"browser: \(.defaults.browser | na)",
+"terminal: \(.defaults.terminal | na)",
+"editor: \(.defaults.editor | na)",
+"agent: \(.defaults.agent | na)",
+"dictation: \(.defaults.dictation | na)",
+(.audio | "volume: " + (
+  if . == null then "n/a"
+  else "\(.volume)%" + (if .muted then " (muted)" else "" end)
+  end)),
+(.battery | "battery: " + (
+  if . == null then "none"
+  else "\(.percent | percent) \(.status | na)"
+  end)),
+(.network | "network: " + (
+  if . == null then "n/a"
+  elif .connected then "connected" + (if .ssid then " (\(.ssid))" else "" end)
+  else "disconnected"
+  end)),
+(.displays | if . == null then "displays: n/a"
+  elif length == 0 then "displays: none"
+  else .[] | "display: \(.name) \(.width)x\(.height)@\(.refresh | na)Hz scale \(.scale | na)" + (if .focused then " (focused)" else "" end)
+  end),
+"reboot_required: \(.pending.reboot_required | yes_no)",
+"restarts_required: \(.pending.restarts_required | if length == 0 then "none" else join(", ") end)",
+(.ollama | "ollama: " + (
+  if . == null then "not installed"
+  elif .running | not then "installed, not running"
+  elif (.models | length) == 0 then "running, no models"
+  else "running, models: \(.models | join(", "))"
+  end))
+JQ
+
+if [[ $mode == "json" ]]; then
+  status_json
+else
+  status_json | jq -r "$text_filter"
+fi
