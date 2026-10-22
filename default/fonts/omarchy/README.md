@@ -2,7 +2,7 @@
 
 The private-use glyphs in `omarchy.ttf` are:
 
-- `U+E900` — Omarky cell mark (original art, generated from the 15x15 mask in `tools/gen-branding.py` of the Omarky fork; replaces the upstream Omarchy logo)
+- `U+E900` — Omarky cell mark (original art, generated from the 15x15 mask in `tools/omarky/gen-branding.py`; replaces the upstream Omarchy logo)
 - `U+E901` — Pi, from <https://pi.dev/logo-auto.svg>
 - `U+E902` — OpenCode, from <https://opencode.ai/favicon-96x96-v3.png>
 - `U+E903` — omp, from <https://omp.sh/favicon.svg>

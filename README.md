@@ -7,7 +7,7 @@ It is a fork, and it stays close to upstream on purpose: internal names (`omarch
 - **Private by default.** Hardened Firefox with DuckDuckGo is the browser; Chromium installs on demand. No Google services are enabled; telemetry is off.
 - **An installer that doesn't wipe your drive.** Besides "Full disk install" it offers a free-space install and "Replace one partition", which erases only the partition you choose and leaves every other partition on the disk untouched.
 - **Your name on the screensaver.** Each user's screensaver is their own first name in ASCII art.
-- **Its own look.** Omarky wordmark, cell mark, boot splash, login screen and install progress, all generated from one 15x15 mask by `tools/gen-branding.py` in the fork's workspace.
+- **Its own look.** Omarky wordmark, cell mark, boot splash, login screen and install progress, all generated from one 15x15 mask by `tools/omarky/gen-branding.py`.
 - **Update-safe.** Omarky's own packages are pinned in `pacman.conf`, so Update System cannot silently replace them with upstream Omarchy.
 
 Omarky is a fork of Omarchy, Copyright (c) David Heinemeier Hansson, MIT licensed. The original [LICENSE](LICENSE) is kept unchanged and applies to this project. Upstream documentation below is Omarchy's and may describe features or branding that Omarky has changed.
