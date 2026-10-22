@@ -33,6 +33,7 @@ PINNED = ('has no $channel channel for', 'has no $pacman_channel channel for', '
 REPLACE = [
  ('install/provisioning/setup-form.sh', '(like dhh)', '(like fleagle)'),
  ('bin/omarchy-provision-owner', 'Beautiful, Fun & Agentic Linux by DHH', 'A private, personal Linux — yours.'),
+ ('install/user/theme.sh', 'omarchy-theme-set "Tokyo Night"', 'omarchy-theme-set "Morganite"'),   # our own default theme
  ('bin/omarchy-agent-crash', 'reporting upstream to Omarky', 'reporting upstream to Omarchy'),   # upstream IS Omarchy
 ]
 WORD = re.compile(r'(?<![A-Za-z0-9_])Omarchy(?![A-Za-z0-9_])')
