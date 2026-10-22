@@ -1,6 +1,6 @@
 #!/bin/bash -p
 
-# omarchy:summary=Set the Omarchy package channel.
+# omarchy:summary=Set the Omarky package channel.
 # omarchy:args=<stable|rc|edge|dev>
 # omarchy:requires-sudo=true
 
@@ -27,8 +27,8 @@ fail() { echo "Error: $*" >&2; exit 1; }
 confirm_dev() {
   cat <<'WARNING'
 
-The dev channel links Omarchy directly to a checkout of the source in ~/omarchy.
-It's exclusively intended for developers working on Omarchy itself.
+The dev channel links Omarky directly to a checkout of the source in ~/omarchy.
+It's exclusively intended for developers working on Omarky itself.
 
 WARNING
 
@@ -43,7 +43,7 @@ validate_dev_checkout() {
   fi
 
   if [[ -d $checkout/.git && ( ! -d $checkout/bin || ! -d $checkout/default || ! -d $checkout/shell ) ]]; then
-    fail "$checkout is a git checkout, but it does not look like Omarchy."
+    fail "$checkout is a git checkout, but it does not look like Omarky."
   fi
 }
 
@@ -108,7 +108,7 @@ Packages are switched to $listed. Run 'omarchy update' from a new terminal to fi
 EOF
   else
     cat >&2 <<EOF
-A package transaction replaced Omarchy with a release that predates command-scoped sudo, so this switch stops before installing ${packages[*]}.
+A package transaction replaced Omarky with a release that predates command-scoped sudo, so this switch stops before installing ${packages[*]}.
 Installed now: ${listed:-neither omarchy nor omarchy-settings}. Run 'omarchy channel set $channel' from a new terminal to finish, then reboot if prompted.
 EOF
   fi

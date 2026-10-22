@@ -184,7 +184,7 @@ DYNAMIC_ROW=$((LOGO_HEIGHT + 3))
 LAST_SETUP_SIZE=""
 
 tips=(
-  "Super + Space opens the Omarchy menu for apps, settings, and more"
+  "Super + Space opens the Omarky menu for apps, settings, and more"
   "Super + K shows all the key bindings"
   "Super is the Windows or command key on your keyboard"
   "Sign PDFs and fill them in with Signed"
@@ -195,13 +195,13 @@ tips=(
   "Super + Ctrl + Print grabs text off the screen with OCR"
   "Print takes a screenshot, Alt + Print records the screen"
   "Set a reminder with Super + Ctrl + R"
-  "Switch themes from Appearance > Theme in the Omarchy menu"
+  "Switch themes from Appearance > Theme in the Omarky menu"
   "Double-click the menu bar to make it transparent"
   "Run a full Windows VM via Install > Windows in the menu"
   "Super + Ctrl + V opens the clipboard manager"
   "Super + 1 through 0 switches workspaces, add Shift to bring the window"
   "Super + Print picks a color from anywhere on screen"
-  "Keep the system fresh with Update in the Omarchy menu"
+  "Keep the system fresh with Update in the Omarky menu"
 )
 
 term_cols() {
@@ -454,7 +454,7 @@ greeter_screen() {
     rows=$(stty size 2>/dev/null </dev/tty | awk '{print $1}')
     [[ $rows =~ ^[0-9]+$ ]] || rows=${LINES:-24}
 
-    tagline="Beautiful, Fun & Agentic Linux by DHH"
+    tagline="A private, personal Linux — yours."
     hint="Press Return to Start Setup"
 
     printf '%s%s' "$HIDE_CURSOR" "$CLEAR"

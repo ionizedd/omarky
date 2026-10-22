@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# omarchy:summary=Sync current Omarchy theme environment into tmux
+# omarchy:summary=Sync current Omarky theme environment into tmux
 # omarchy:hidden=true
 
 CURRENT_THEME_PATH="$HOME/.local/state/omarchy/current/theme"

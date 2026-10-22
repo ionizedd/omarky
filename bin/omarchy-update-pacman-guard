@@ -47,7 +47,7 @@ cat >&2 <<'MESSAGE'
 
 Woah partner...
 
-This looks like a direct pacman system upgrade. Omarchy updates should normally
+This looks like a direct pacman system upgrade. Omarky updates should normally
 run through:
 
   omarchy update
@@ -55,7 +55,7 @@ run through:
 That path handles the update transcript, snapshot, keyrings, package upgrade,
 migrations, post-update hooks, shell update state, and restart checks together.
 
-If you really meant to bypass Omarchy for this transaction, rerun pacman with:
+If you really meant to bypass Omarky for this transaction, rerun pacman with:
 
   sudo env OMARCHY_ALLOW_DIRECT_PACMAN=1 pacman -Syu
 

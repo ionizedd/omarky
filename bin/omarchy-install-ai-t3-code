@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# omarchy:summary=Install T3 Code and point it at the Omarchy palette
+# omarchy:summary=Install T3 Code and point it at the Omarky palette
 # omarchy:args=[stable|nightly] [--no-launch]
 # omarchy:requires-sudo=true
 

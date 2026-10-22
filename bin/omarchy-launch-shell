@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# omarchy:summary=Launch the Omarchy shell with its log kept in the journal
+# omarchy:summary=Launch the Omarky shell with its log kept in the journal
 # omarchy:hidden=true
 
 # Quickshell only logs to its instance runtime dir (tmpfs), so when the shell
@@ -84,10 +84,10 @@ while true; do
   fi
 
   if (( ++attempts > 5 )); then
-    logger -t omarchy-shell "Giving up on the Omarchy shell after $attempts relaunches in under a minute."
+    logger -t omarchy-shell "Giving up on the Omarky shell after $attempts relaunches in under a minute."
     exit 1
   fi
 
-  logger -t omarchy-shell "Omarchy shell exited with status $status; relaunching."
+  logger -t omarchy-shell "Omarky shell exited with status $status; relaunching."
   sleep 1
 done

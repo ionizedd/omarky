@@ -5,7 +5,7 @@
 # asked for exists, then it disables itself (the unit file stays; with neither
 # file left it no longer runs).
 [Unit]
-Description=Omarchy first-boot hardware setup deferred from the image build
+Description=Omarky first-boot hardware setup deferred from the image build
 ConditionPathExists=|/var/lib/omarchy/image/deferred-steps
 ConditionPathExists=|/var/lib/omarchy/image/pacman-keyring
 Before=omarchy-provision-owner.service display-manager.service

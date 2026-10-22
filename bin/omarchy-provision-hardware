@@ -126,7 +126,7 @@ while (( ${#remaining[@]} )); do
   if [[ -L $script ]]; then
     fail "Deferred step is a symlink: $step"
   elif [[ ! -e $script ]]; then
-    echo "Skipping deferred hardware step $step: this Omarchy no longer ships it"
+    echo "Skipping deferred hardware step $step: this Omarky no longer ships it"
   else
     echo "Running deferred hardware step $step"
     if ! run_logged "$script"; then

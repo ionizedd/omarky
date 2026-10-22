@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# omarchy:summary=Finalize Omarchy user setup (runtime tweaks /etc/skel can't do)
+# omarchy:summary=Finalize Omarky user setup (runtime tweaks /etc/skel can't do)
 # omarchy:hidden=true
 
 set -euo pipefail

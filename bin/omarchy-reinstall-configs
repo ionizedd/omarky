@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# omarchy:summary=Reset Omarchy user configs and shipped defaults in $HOME (destructive)
+# omarchy:summary=Reset Omarky user configs and shipped defaults in $HOME (destructive)
 
 set -euo pipefail
 
@@ -9,7 +9,7 @@ if (( EUID == 0 )); then
   exit 1
 fi
 
-echo "Resetting Omarchy user configs to shipped defaults..."
+echo "Resetting Omarky user configs to shipped defaults..."
 
 # /etc/skel is the same tree useradd -m copies to seed a fresh user's $HOME.
 # Replaying it over an existing user resyncs every package-shipped user

@@ -14,7 +14,7 @@ usage() {
 Usage: omarchy bar <command> [args...]
 
   use <id>                             Use a bar option as the active bar
-  reset                                Return to the built-in Omarchy bar
+  reset                                Return to the built-in Omarky bar
   defaults                             Restore the default bar and service widgets
   position [top|bottom|left|right]     Bar position; prints the current one
                                        when given none
@@ -203,7 +203,7 @@ cmd_defaults() {
     --slurpfile defaults "$DEFAULTS_FILE" \
     --argjson widgets "$optional_widgets"
   sync_glass || fail "could not change the blur behind the bar"
-  echo "Restored the default Omarchy bar"
+  echo "Restored the default Omarky bar"
 }
 
 cmd_position() {

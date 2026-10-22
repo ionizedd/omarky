@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# omarchy:summary=Copy subscription account logins to another Omarchy machine over SSH
+# omarchy:summary=Copy subscription account logins to another Omarky machine over SSH
 # omarchy:args=[--replace] <ssh-host> [claude|codex|grok...]
 # omarchy:examples=omarchy agent account copy laptop | omarchy agent account copy user@desktop claude
 

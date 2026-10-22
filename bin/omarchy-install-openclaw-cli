@@ -322,7 +322,7 @@ esac
 # tool run here uses, so the migration can tell them from a failed setup.
 users_own=79
 if ! command_ours; then
-  echo "$command_path is not the OpenClaw Omarchy set up. Move it aside, then run omarchy-install-openclaw-cli --now again." >&2
+  echo "$command_path is not the OpenClaw Omarky set up. Move it aside, then run omarchy-install-openclaw-cli --now again." >&2
   exit "$users_own"
 fi
 if ! path_clear; then
@@ -435,7 +435,7 @@ for role in gateway node; do
 done
 
 if ! on_path; then
-  echo "$runtime_command is ready, but another openclaw is on PATH at $(foreign_openclaw), which Omarchy could run instead." >&2
+  echo "$runtime_command is ready, but another openclaw is on PATH at $(foreign_openclaw), which Omarky could run instead." >&2
   echo "Remove it, then run omarchy-install-openclaw-cli --now again." >&2
   exit 1
 fi

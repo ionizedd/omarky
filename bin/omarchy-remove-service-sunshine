@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# omarchy:summary=Remove Sunshine and close Omarchy-managed Moonlight streaming ports.
+# omarchy:summary=Remove Sunshine and close Omarky-managed Moonlight streaming ports.
 # omarchy:requires-sudo=true
 
 set -e
@@ -66,4 +66,4 @@ disable_hyprland_autostart
 close_ufw_ports
 
 echo ""
-echo "Sunshine has been removed and its Omarchy-managed Moonlight streaming ports have been closed."
+echo "Sunshine has been removed and its Omarky-managed Moonlight streaming ports have been closed."

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# omarchy:summary=Reinstall all default Omarchy packages from the stable channel, or on Apple Silicon the edge channel
+# omarchy:summary=Reinstall all default Omarky packages from the stable channel, or on Apple Silicon the edge channel
 # omarchy:requires-sudo=true
 
 set -e

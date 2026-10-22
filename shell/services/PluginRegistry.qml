@@ -651,7 +651,7 @@ QtObject {
     for (var tk in thirdParty) {
       if (firstParty[tk] || String(tk).indexOf("omarchy.") === 0) {
         console.warn("PluginRegistry: plugin " + tk
-          + " rejected: id is reserved for first-party Omarchy plugins")
+          + " rejected: id is reserved for first-party Omarky plugins")
         continue
       }
       merged[tk] = thirdParty[tk]

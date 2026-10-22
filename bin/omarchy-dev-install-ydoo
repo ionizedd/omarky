@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# omarchy:summary=Install and enable ydotool mouse automation for Omarchy development
+# omarchy:summary=Install and enable ydotool mouse automation for Omarky development
 # omarchy:requires-sudo=true
 
 set -euo pipefail

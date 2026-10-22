@@ -14,7 +14,7 @@ set -euo pipefail
 # still goes in, on top, where no [profile] section can catch it.
 setup_mpv() {
   local conf=~/.config/mpv/mpv.conf
-  local comment="# Fall back to the Snapdragon video chip's decoder (Omarchy)"
+  local comment="# Fall back to the Snapdragon video chip's decoder (Omarky)"
   local hwdec='hwdec=auto-safe,v4l2m2m-copy'
 
   if [[ ! -s $conf ]]; then

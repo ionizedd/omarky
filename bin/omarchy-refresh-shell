@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# omarchy:summary=Reset shell.json to Omarchy defaults
+# omarchy:summary=Reset shell.json to Omarky defaults
 # omarchy:examples=omarchy refresh shell
 
 set -euo pipefail

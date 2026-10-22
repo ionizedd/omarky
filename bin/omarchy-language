@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# omarchy:summary=Show or set the Omarchy language and the session's locale
+# omarchy:summary=Show or set the Omarky language and the session's locale
 # omarchy:args=[<code>|list|locale [<code>]|seed <code>]
 # omarchy:examples=omarchy language | omarchy language da | omarchy language list
 

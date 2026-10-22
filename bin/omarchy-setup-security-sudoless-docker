@@ -24,7 +24,7 @@ echo "    docker run -v /:/host alpine   # full read/write of the host, as root"
 echo ""
 echo "and take over the machine with no password prompt. A single rogue script,"
 echo "dependency, or plugin running as you is enough. It is convenient for"
-echo "development, but it removes the protection Omarchy keeps by default, where"
+echo "development, but it removes the protection Omarky keeps by default, where"
 echo "Docker access goes through a polkit/sudo prompt."
 echo ""
 

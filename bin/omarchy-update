@@ -1,6 +1,6 @@
 #!/bin/bash -p
 
-# omarchy:summary=Update Omarchy and system packages
+# omarchy:summary=Update Omarky and system packages
 # omarchy:alias=omarchy up
 # omarchy:args=[-y]
 # omarchy:examples=omarchy update | omarchy update -y

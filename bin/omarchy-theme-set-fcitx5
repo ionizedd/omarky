@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# omarchy:summary=Sync the generated Omarchy theme to the Fcitx candidate window
+# omarchy:summary=Sync the generated Omarky theme to the Fcitx candidate window
 # omarchy:args=[--activate]
 # omarchy:hidden=true
 

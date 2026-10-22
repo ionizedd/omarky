@@ -528,7 +528,7 @@ fi
 # What omarchy-agent runs is the command, not the venv, so the command is what
 # has to answer for the seeded sessions.
 if ! hermes_prompt_ready; then
-  echo "Hermes is installed at $runtime, but $command_path does not run the interactive seeded sessions Omarchy needs." >&2
+  echo "Hermes is installed at $runtime, but $command_path does not run the interactive seeded sessions Omarky needs." >&2
   echo "Update Hermes with 'hermes update', then run omarchy-install-hermes-cli --now again." >&2
   exit 1
 fi

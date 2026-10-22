@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# omarchy:summary=Print the active Omarchy dev-link git branch
+# omarchy:summary=Print the active Omarky dev-link git branch
 # omarchy:hidden=true
 
 omarchy_path=${OMARCHY_PATH:-/usr/share/omarchy}

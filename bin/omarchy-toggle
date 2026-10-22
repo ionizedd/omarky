@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# omarchy:summary=Toggle Omarchy features between enabled and disabled
+# omarchy:summary=Toggle Omarky features between enabled and disabled
 # omarchy:args=<flag-name> [toggle|on|off]
 
 if (($# < 1)); then

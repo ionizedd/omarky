@@ -11,7 +11,7 @@
 # the new account on state a wipe retry later deletes. While wipe-pending
 # remains, setup stays down and the wipe retries on the next boot.
 [Unit]
-Description=Omarchy provisioning first-boot user setup
+Description=Omarky provisioning first-boot user setup
 ConditionPathExists=/var/lib/omarchy/provisioning/pending
 ConditionPathExists=!/var/lib/omarchy/provisioning/wipe-pending
 After=systemd-user-sessions.service omarchy-system-factory-reset-finish.service

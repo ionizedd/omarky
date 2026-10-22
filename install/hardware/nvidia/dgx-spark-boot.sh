@@ -13,7 +13,7 @@ if omarchy-hw-aarch64-gb10 && omarchy-hw-match "NVIDIA_DGX_Spark"; then
   omarchy-boot-direct || direct_boot_status=$?
   if (( direct_boot_status == 0 )); then
     rm -f "$config_file"
-    echo "Keeping the UKI because Omarchy Direct Boot is configured"
+    echo "Keeping the UKI because Omarky Direct Boot is configured"
   elif (( direct_boot_status == 1 )); then
     mkdir -p "$limine_config_dir"
     # Named to sort after omarchy-uki.conf, whose ENABLE_UKI=yes this overrides.

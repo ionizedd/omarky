@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# omarchy:summary=Validate a plugin folder against the Omarchy plugin manifest schema
+# omarchy:summary=Validate a plugin folder against the Omarky plugin manifest schema
 # omarchy:group=plugin
 # omarchy:args=<plugin-folder>
 # omarchy:examples=omarchy plugin validate ./my-plugin

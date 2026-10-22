@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# omarchy:summary=Check or mark completed Omarchy setup tasks
+# omarchy:summary=Check or mark completed Omarky setup tasks
 # omarchy:args=<check|mark|ensure> <name>
 # omarchy:hidden=true
 

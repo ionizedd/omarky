@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-# omarchy:summary=Add branded glyphs to the Omarchy icon font
+# omarchy:summary=Add branded glyphs to the Omarky icon font
 # omarchy:args=[list|add] <name> <svg-file-or-url> [--codepoint U+E9xx] [--font PATH]
 # omarchy:examples=omarchy dev font list | omarchy dev font add ollama https://simpleicons.org/icons/ollama.svg
 """Append monochrome SVG marks to default/fonts/omarchy/omarchy.ttf.

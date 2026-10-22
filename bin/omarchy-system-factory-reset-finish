@@ -30,7 +30,7 @@ fi
 # This runs before var-log.mount, so a log file under /var/log would be
 # shadowed (and @log is recreated below anyway). stdout goes to the journal,
 # which is volatile in /run this early and flushed into the fresh @log later.
-echo "=== Omarchy factory wipe started: $(date '+%Y-%m-%d %H:%M:%S') ==="
+echo "=== Omarky factory wipe started: $(date '+%Y-%m-%d %H:%M:%S') ==="
 
 log() {
   echo "factory-wipe: $1"

@@ -58,7 +58,7 @@ omarchy_security_require_source_root() {
   if [[ ${OMARCHY_PATH:-} != /* || $(/usr/bin/realpath -e -- "$OMARCHY_PATH") != "$OMARCHY_PATH" ]] ||
     ! { [[ $command_source == "$OMARCHY_PATH/bin/$command_name" ]] ||
       [[ $OMARCHY_PATH == "/usr/share/omarchy" && $command_source == "/usr/bin/$command_name" ]]; }; then
-    echo "OMARCHY_PATH does not match this Omarchy command." >&2
+    echo "OMARCHY_PATH does not match this Omarky command." >&2
     return 1
   fi
 }

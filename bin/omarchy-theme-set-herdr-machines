@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# omarchy:summary=Mirror the current theme to your herdr machines that run Omarchy
+# omarchy:summary=Mirror the current theme to your herdr machines that run Omarky
 # omarchy:args=[--available]
 # omarchy:hidden=true
 

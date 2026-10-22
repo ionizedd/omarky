@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# omarchy:summary=Show the current Omarchy dev-link state
+# omarchy:summary=Show the current Omarky dev-link state
 # omarchy:group=dev
 
 set -euo pipefail

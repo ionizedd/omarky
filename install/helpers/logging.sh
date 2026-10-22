@@ -20,7 +20,7 @@ start_install_log() {
   export OMARCHY_START_TIME="${OMARCHY_START_TIME:-$(date '+%Y-%m-%d %H:%M:%S')}"
   export OMARCHY_START_EPOCH="${OMARCHY_START_EPOCH:-$(date +%s)}"
 
-  omarchy_log_line "=== Omarchy Setup Started: $OMARCHY_START_TIME ==="
+  omarchy_log_line "=== Omarky Setup Started: $OMARCHY_START_TIME ==="
 }
 
 stop_install_log() {
@@ -28,13 +28,13 @@ stop_install_log() {
   end_time=$(date '+%Y-%m-%d %H:%M:%S')
   end_epoch=$(date +%s)
 
-  omarchy_log_line "=== Omarchy Setup Completed: $end_time ==="
+  omarchy_log_line "=== Omarky Setup Completed: $end_time ==="
 
   if [[ -n ${OMARCHY_START_EPOCH:-} ]]; then
     duration=$((end_epoch - OMARCHY_START_EPOCH))
     mins=$((duration / 60))
     secs=$((duration % 60))
-    omarchy_log_line "Omarchy setup: ${mins}m ${secs}s"
+    omarchy_log_line "Omarky setup: ${mins}m ${secs}s"
   fi
 }
 

@@ -113,7 +113,7 @@ run_root_transaction() {
     [[ $max_asset_size =~ ^[0-9]+$ ]]
     (( max_asset_size > 0 ))
 
-    failure_context="the Omarchy source tree $source_root"
+    failure_context="the Omarky source tree $source_root"
     canonical_source_root=$(realpath -e -- "$source_root")
     [[ $canonical_source_root == "$source_root" ]]
 

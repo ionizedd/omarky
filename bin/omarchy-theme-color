@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# omarchy:summary=Resolve semantic colors from an Omarchy theme colors.toml
+# omarchy:summary=Resolve semantic colors from an Omarky theme colors.toml
 # omarchy:args=[--file <colors.toml>] (--all | --raw | <key> [fallback])
 # omarchy:hidden=true
 

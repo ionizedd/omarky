@@ -6,6 +6,6 @@ set -e
 # agent already chosen means the invitation has nothing to offer.
 if [[ -z $(omarchy-default-agent) ]] && omarchy-done ensure agent-setup-invitation; then
   omarchy-notification-send -u critical -g 󰚩 "Set your default agent" \
-    "Let your favorite agent help with Omarchy." \
+    "Let your favorite agent help with Omarky." \
     --exec omarchy menu summon setup.default.agent
 fi

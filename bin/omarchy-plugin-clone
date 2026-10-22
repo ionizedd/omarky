@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# omarchy:summary=Clone a built-in Omarchy shell plugin into your own config
+# omarchy:summary=Clone a built-in Omarky shell plugin into your own config
 # omarchy:group=plugin
 # omarchy:args=<source-id> [--edit]
 

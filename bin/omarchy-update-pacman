@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# omarchy:summary=Run a pacman transaction for the Omarchy update flow, shielded from desktop session teardown.
+# omarchy:summary=Run a pacman transaction for the Omarky update flow, shielded from desktop session teardown.
 # omarchy:args=<pacman-args>
 # omarchy:hidden=true
 # omarchy:requires-sudo=true

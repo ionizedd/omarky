@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# omarchy:summary=Check whether an active Omarchy Direct Boot EFI entry is configured.
+# omarchy:summary=Check whether an active Omarky Direct Boot EFI entry is configured.
 # omarchy:args=[--number]
 # omarchy:hidden=true
 

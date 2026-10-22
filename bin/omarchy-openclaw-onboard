@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# omarchy:summary=Run OpenClaw's setup wizard the way Omarchy needs it: in the terminal, installing the gateway as a user service, and returning when it is done.
+# omarchy:summary=Run OpenClaw's setup wizard the way Omarky needs it: in the terminal, installing the gateway as a user service, and returning when it is done.
 
 # Not bare `openclaw onboard`: as of 2026.9.1 that is the guided flow, which
 # ends by running a foreground gateway and handing off to a browser tab, and

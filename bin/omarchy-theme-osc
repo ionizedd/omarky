@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# omarchy:summary=Print OSC sequences for an Omarchy color theme
+# omarchy:summary=Print OSC sequences for an Omarky color theme
 # omarchy:hidden=true
 
 theme="${1:-$HOME/.local/state/omarchy/current/theme/colors.toml}"

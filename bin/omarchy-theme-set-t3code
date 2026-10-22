@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# omarchy:summary=Sync the generated Omarchy theme to T3 Code
+# omarchy:summary=Sync the generated Omarky theme to T3 Code
 # omarchy:hidden=true
 
 set -euo pipefail

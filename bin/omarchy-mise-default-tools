@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# omarchy:summary=List Omarchy's default mise tools, or opt this user out of or back into them
+# omarchy:summary=List Omarky's default mise tools, or opt this user out of or back into them
 # omarchy:args=<list|declares <tool>|disable|enable>
 # omarchy:hidden=true
 
@@ -47,7 +47,7 @@ disable)
     # miserc.toml is flat, so a second ignored_config_paths key would be a
     # duplicate. Merging into the user's own list is left to them.
     if [[ -f $miserc ]] && grep -q '^[[:space:]]*ignored_config_paths[[:space:]]*=' "$miserc"; then
-      echo "Add \"$tools_config\" to ignored_config_paths in $miserc to opt out of Omarchy's mise tools." >&2
+      echo "Add \"$tools_config\" to ignored_config_paths in $miserc to opt out of Omarky's mise tools." >&2
       exit 1
     fi
     mkdir -p "$(dirname "$miserc")"
@@ -69,7 +69,7 @@ enable)
     fi
   fi
   if opted_out; then
-    echo "Remove \"$tools_config\" from ignored_config_paths in $miserc to restore Omarchy's mise tools." >&2
+    echo "Remove \"$tools_config\" from ignored_config_paths in $miserc to restore Omarky's mise tools." >&2
     exit 1
   fi
   mise reshim --system

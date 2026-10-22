@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# omarchy:summary=Print the installed Omarchy version
+# omarchy:summary=Print the installed Omarky version
 
 omarchy_path=${OMARCHY_PATH:-/usr/share/omarchy}
 omarchy_path=${omarchy_path%/}

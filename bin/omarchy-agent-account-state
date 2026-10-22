@@ -4,7 +4,7 @@
 # omarchy:hidden=true
 """The account registry behind `omarchy agent account`.
 
-An account is a Claude Code, Codex, or Grok login Omarchy keeps a home for.
+An account is a Claude Code, Codex, or Grok login Omarky keeps a home for.
 The login you already have stays where the CLI put it (~/.claude, ~/.codex,
 ~/.grok) and
 is the primary account; added accounts get a home of their own under
@@ -750,7 +750,7 @@ def tr(lookup: str, english: str, *args: Any) -> str:
 
 
 def notify(title: str, body: str, action: list[str] | None = None) -> None:
-  command = ["omarchy-notification-send", "--app-name", "Omarchy Agents", "-g", "󰚩", title, body]
+  command = ["omarchy-notification-send", "--app-name", "Omarky Agents", "-g", "󰚩", title, body]
   if action:
     command += ["--exec"] + action
   subprocess.run(command, check=False)

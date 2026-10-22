@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# omarchy:summary=Create a new Omarchy migration in the current source tree.
+# omarchy:summary=Create a new Omarky migration in the current source tree.
 # omarchy:args=[--no-edit]
 
 set -euo pipefail

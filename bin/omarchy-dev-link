@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# omarchy:summary=Point Omarchy at a local checkout after reboot
+# omarchy:summary=Point Omarky at a local checkout after reboot
 # omarchy:group=dev
 # omarchy:args=<path-to-checkout> [--no-reboot]
 # omarchy:examples=omarchy dev link ~/omarchy
@@ -85,7 +85,7 @@ target=$(realpath -e "$1" 2>/dev/null) || {
 
 for required in bin default shell; do
   if [[ ! -d $target/$required ]]; then
-    echo "Warning: $target/$required not found — does this look like an Omarchy source checkout?" >&2
+    echo "Warning: $target/$required not found — does this look like an Omarky source checkout?" >&2
   fi
 done
 
@@ -114,7 +114,7 @@ fi
 
 sudo install -Dm440 -o root -g root "$staged_sudoers" "$sudoers_file"
 
-echo "Pointed Omarchy at $target"
+echo "Pointed Omarky at $target"
 echo "sudo now resolves omarchy-* from $target/bin"
 echo
 

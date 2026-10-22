@@ -6,7 +6,7 @@
 """A realistic run of notifications, sent straight onto the session bus as an
 app would. The senders mimic what really notifies this desktop (Chrome web
 apps, chat apps, a terminal); the words are invented, the only people named
-are Omarchy's own, and phone numbers are 555 ones."""
+are Omarky's own, and phone numbers are 555 ones."""
 import argparse
 import json
 import os
@@ -27,21 +27,21 @@ SCENES = {
   # what tells the sites apart. The Campfire burst arrives faster than the pace
   # so a stack builds.
   "chat": [
-    dict(web="3.basecamp.com", summary="Omarchy",
+    dict(web="3.basecamp.com", summary="Omarky",
          body="DHH: notification decks just landed on edge, worth a look before the call"),
     dict(app="Signal", icon="signal-desktop", summary="Ryan Hughes",
          body="I have to show you the new notifications, are you around later?"),
     dict(web="app.hey.com", summary="New Email in Imbox",
-         body="Re: Omarchy 4.5 release notes"),
+         body="Re: Omarky 4.5 release notes"),
     dict(web="x.com", summary="DHH",
          body="replied to your post: this is the part everyone gets wrong"),
-    dict(web="3.basecamp.com", summary="Omarchy", gap=0.7,
+    dict(web="3.basecamp.com", summary="Omarky", gap=0.7,
          body="Ryan Hughes: pushed the spacing pass, take a look"),
-    dict(web="3.basecamp.com", summary="Omarchy", gap=0.7,
+    dict(web="3.basecamp.com", summary="Omarky", gap=0.7,
          body="DHH: the two-line ones finally breathe"),
-    dict(web="3.basecamp.com", summary="Omarchy", gap=0.7,
+    dict(web="3.basecamp.com", summary="Omarky", gap=0.7,
          body="Ryan Hughes: one more go at the icon size and I think that is it"),
-    dict(web="3.basecamp.com", summary="Omarchy",
+    dict(web="3.basecamp.com", summary="Omarky",
          body="DHH: ship it"),
   ],
   "work": [
@@ -54,12 +54,12 @@ SCENES = {
          body="[omacom/omarchy] <b>Replace the notification engine with Omapager</b> (PR #15932)"),
     dict(app="foot", icon="foot", summary="Tests passed",
          body="412 passed, 0 failed in <b>2m 14s</b>"),
-    dict(app="Omarchy", icon="omarchy", summary="Omarchy 4.5 is out",
+    dict(app="Omarky", icon="omarchy", summary="Omarky 4.5 is out",
          body="Notification decks, one-click codes, and a lot more"),
   ],
   # Apps this desktop has icons for, so a letter tile here means a bug.
   "system": [
-    dict(app="Omarchy", icon="system-software-update", summary="Updates available",
+    dict(app="Omarky", icon="system-software-update", summary="Updates available",
          body="14 packages, including linux 7.2.8 and hyprland 0.56.2"),
     dict(app="Snapshots", icon="LimineSnapperSync", summary="Snapshot complete",
          body="pre-update root snapshot written in 4s"),
@@ -77,7 +77,7 @@ SCENES = {
   # Every offer a card can make, then shapes that must stay plain (a test
   # count, an issue reference). Numbers are 555 ones, so nobody gets called.
   "interactive": [
-    dict(web="3.basecamp.com", summary="Omarchy",
+    dict(web="3.basecamp.com", summary="Omarky",
          body="DHH: latest build is up, take a look https://omarchy.org"),
     dict(web="app.hey.com", summary="New Email in Imbox",
          body="Your Basecamp verification code is 482913"),

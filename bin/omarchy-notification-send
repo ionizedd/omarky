@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# omarchy:summary=Send an Omarchy desktop notification
+# omarchy:summary=Send an Omarky desktop notification
 # omarchy:args=[--app-name <app-name>] [-g <glyph>] [-u <low|normal|critical>] [-i <icon>] [-t <ms>] [-r <id>] [-p] [--image <path-or-uri>] <headline> [description] [--exec <program> [args...]]
 # omarchy:examples=omarchy notification send "Reminder" "5 minutes are up" -g 󰢌
 

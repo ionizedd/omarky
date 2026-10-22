@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# omarchy:summary=Show the Omarchy Quickshell on-screen display
+# omarchy:summary=Show the Omarky Quickshell on-screen display
 # omarchy:args=[-i|--icon <icon>] [-m|--message <text>] [-p|--progress <0-100>] [-d|--duration <ms>]
 # omarchy:examples=omarchy osd -i brightness -p 50 | omarchy osd -m "Hello"
 

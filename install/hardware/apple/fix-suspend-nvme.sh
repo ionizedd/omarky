@@ -13,7 +13,7 @@ if [[ $MACBOOK_MODEL =~ MacBook(8,1|9,1|10,1)|MacBookPro13,[123]|MacBookPro14,[1
     sudo mkdir -p /etc/systemd/system
     sudo tee /etc/systemd/system/omarchy-nvme-suspend-fix.service >/dev/null <<'EOF'
 [Unit]
-Description=Omarchy NVMe Suspend Fix for MacBook
+Description=Omarky NVMe Suspend Fix for MacBook
 
 [Service]
 ExecStart=/bin/bash -c 'echo 0 > /sys/bus/pci/devices/0000\:01\:00.0/d3cold_allowed'

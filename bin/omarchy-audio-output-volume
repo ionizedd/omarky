@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# omarchy:summary=Adjust output volume and show the Omarchy OSD
+# omarchy:summary=Adjust output volume and show the Omarky OSD
 # omarchy:args=<raise|lower|mute-toggle|+N|-N>
 # omarchy:examples=omarchy audio output volume raise | omarchy audio output volume lower | omarchy audio output volume mute-toggle | omarchy audio output volume +1
 

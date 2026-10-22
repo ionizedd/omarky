@@ -715,7 +715,7 @@ require_factory_snapshot() {
 main() {
   omarchy-cmd-present btrfs || { echo "Error: btrfs-progs is required" >&2; exit 1; }
 
-  root_is_btrfs_at || fail "reset requires the standard Omarchy Btrfs layout (subvol=@)"
+  root_is_btrfs_at || fail "reset requires the standard Omarky Btrfs layout (subvol=@)"
 
   touch "$LOG_FILE"
   chmod 600 "$LOG_FILE"

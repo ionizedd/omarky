@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# omarchy:summary=Preview an Omarchy theme palette in the terminal
+# omarchy:summary=Preview an Omarky theme palette in the terminal
 # omarchy:args=[theme-name|theme-dir|colors.toml] [--no-color] [--no-osc|--osc]
 # omarchy:examples=omarchy dev theme-preview | omarchy dev theme-preview tokyo-night | omarchy dev theme-preview themes/gruvbox/colors.toml --no-color --no-osc
 

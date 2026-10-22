@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# omarchy:summary=Sync the generated Omarchy Pi theme
+# omarchy:summary=Sync the generated Omarky Pi theme
 # omarchy:args=[--activate]
 # omarchy:hidden=true
 
@@ -37,7 +37,7 @@ done
 if [[ ! -f $PI_SOURCE_PATH ]]; then
   if (( PI_ACTIVATE == 1 )); then
     echo "Pi theme source missing: $PI_SOURCE_PATH" >&2
-    echo "Run omarchy-theme-refresh after selecting an Omarchy theme." >&2
+    echo "Run omarchy-theme-refresh after selecting an Omarky theme." >&2
     exit 1
   fi
 

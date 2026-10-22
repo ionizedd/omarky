@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# omarchy:summary=Restart the Omarchy shell
+# omarchy:summary=Restart the Omarky shell
 # omarchy:examples=omarchy restart shell
 
 # A caller opened after dev link/unlink may disagree with the still-running
@@ -9,7 +9,7 @@ session_omarchy_path=$(systemctl --user show-environment 2>/dev/null | sed -n 's
 : "${session_omarchy_path:=$OMARCHY_PATH}"
 
 CONFIG_DIR="$session_omarchy_path/shell"
-[[ -f $CONFIG_DIR/shell.qml ]] || { echo "Omarchy shell config not found: $CONFIG_DIR" >&2; exit 1; }
+[[ -f $CONFIG_DIR/shell.qml ]] || { echo "Omarky shell config not found: $CONFIG_DIR" >&2; exit 1; }
 
 # Allow running from outside the session (e.g. over ssh) by deriving the
 # Hyprland instance signature from the newest instance runtime dir.
@@ -110,7 +110,7 @@ while (( SECONDS < deadline )); do
   sleep 0.1
 done
 if (( shell_ready == 0 )); then
-  echo "Omarchy shell did not become ready after restart." >&2
+  echo "Omarky shell did not become ready after restart." >&2
   exit 1
 fi
 
@@ -119,7 +119,7 @@ fi
 # first and depends on nothing else: a user stranded behind the failsafe must
 # not wait on the notification plugin, which may be slow or absent.
 if (( relock )) && ! relock_session; then
-  echo "Omarchy shell restarted, but the session lock was not re-secured." >&2
+  echo "Omarky shell restarted, but the session lock was not re-secured." >&2
   exit 1
 fi
 
@@ -135,7 +135,7 @@ if (( notifications_were_running )); then
     sleep 0.1
   done
   if (( notifications_restored == 0 )); then
-    echo "Omarchy shell restarted, but its notification service did not become ready." >&2
+    echo "Omarky shell restarted, but its notification service did not become ready." >&2
     exit 1
   fi
 fi

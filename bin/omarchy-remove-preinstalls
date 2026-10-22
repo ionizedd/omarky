@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# omarchy:summary=Remove preinstalled Omarchy applications (web apps, TUIs, and selected packages).
+# omarchy:summary=Remove preinstalled Omarky applications (web apps, TUIs, and selected packages).
 
 if gum confirm --affirmative "$(omarchy-i18n common.yes)" --negative "$(omarchy-i18n common.no)" "$(omarchy-i18n preinstalls.confirmRemove)"; then
-  echo -e "Removing preinstalled Omarchy applications...\n"
+  echo -e "Removing preinstalled Omarky applications...\n"
 
   omarchy-webapp-remove-all
   omarchy-tui-remove-all

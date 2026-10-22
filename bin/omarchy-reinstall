@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# omarchy:summary=Reinstall Omarchy packages and reset default configs
+# omarchy:summary=Reinstall Omarky packages and reset default configs
 # omarchy:requires-sudo=true
 
 set -e
 
-echo -e "This will reinstall all default Omarchy packages and reset default configs.\nWarning: user config changes will be overwritten.\n"
+echo -e "This will reinstall all default Omarky packages and reset default configs.\nWarning: user config changes will be overwritten.\n"
 
 if gum confirm "Are you sure you want to reinstall and lose config changes?"; then
   omarchy-reinstall-pkgs
