@@ -40,6 +40,8 @@ LOGIC = re.compile(r'\b(grep|egrep|sed|awk|efibootmgr|rg|cut)\b|\[\[:|=~|\[\[ .*
 URLISH = re.compile(r'https?://\S*Omarchy|github\.com/\S*Omarchy|\.Omarchy|Omarchy\.\w')
 
 changed = 0
+renamed_literals = {}   # old UI literal -> new, so the i18n catalogs (keyed by English text) follow
+LITERAL = re.compile(r'"([^"\\]*Omarchy[^"\\]*)"')
 for root in ['shell', 'default/omarchy', 'config', 'bin', 'install']:
     for dp, _, fns in os.walk(root):
         for f in fns:
@@ -57,7 +59,9 @@ for root in ['shell', 'default/omarchy', 'config', 'bin', 'install']:
                     new = l.replace('"label":"Omarchy"', '"label":"Omarchy manual"')
                 else:
                     new = WORD.sub('Omarky', l)
-                if new != l: lines[i] = new; n += 1
+                if new != l:
+                    for lit in LITERAL.findall(l): renamed_literals[lit] = WORD.sub('Omarky', lit)
+                    lines[i] = new; n += 1
             if n:
                 open(p, 'w', encoding='utf-8').write('\n'.join(lines)); changed += n
 # default/i18n/en/menu.json must mirror the menu definition's labels (i18n-test): same two relabels
@@ -71,6 +75,16 @@ if os.path.exists(p):
             line = line.replace('"Omarchy"', '"Omarchy manual"' if key.startswith('learn') else '"Omarky"'); changed += 1; key = None
         out.append(line)
     open(p, 'w', encoding='utf-8').write('\n'.join(out))
+# flat catalogs (English text -> translation): rename the key (and English value) of every literal we renamed
+import json, glob
+for cp in glob.glob('default/i18n/*/*.json'):
+    raw = open(cp, encoding='utf-8').read()
+    try: d = json.loads(raw)
+    except Exception: continue
+    if not isinstance(d, dict) or any(isinstance(v, dict) for v in d.values()): continue
+    if not any(k in renamed_literals for k in d): continue
+    d2 = {renamed_literals.get(k, k): (renamed_literals.get(v, v) if v == k else v) for k, v in d.items()}
+    open(cp, 'w', encoding='utf-8').write(json.dumps(d2, indent=2, ensure_ascii=False) + ('\n' if raw.endswith('\n') else '')); changed += 1
 for p, old, new in REPLACE:
     if os.path.exists(p):
         s = open(p, encoding='utf-8').read()
