@@ -1,0 +1,121 @@
+#!/bin/bash
+
+# omarchy:summary=Open, close, or check the encrypted Vault folder (~/Vault)
+# omarchy:args=open|close|status [--quiet] | status open|closed|unset
+# omarchy:examples=omarchy vault open | omarchy vault close | omarchy vault status closed
+
+# The Vault is a gocryptfs filesystem: the encrypted files live in $cipher_dir
+# and are only readable as plain files while mounted at $mount_dir. Both can be
+# moved for testing; nothing else should need to.
+cipher_dir=${OMARKY_VAULT_CIPHER:-$HOME/.local/share/omarky/vault}
+mount_dir=${OMARKY_VAULT_MOUNT:-$HOME/Vault}
+
+quiet=0
+args=()
+for arg in "$@"; do
+  if [[ $arg == "--quiet" ]]; then
+    quiet=1
+  else
+    args+=("$arg")
+  fi
+done
+action=${args[0]:-}
+expected=${args[1]:-}
+
+# unset: never set up. closed: set up, not mounted. open: mounted right now.
+vault_state() {
+  if [[ ! -f $cipher_dir/gocryptfs.conf ]]; then
+    echo unset
+  elif [[ $(findmnt -rn -M "$mount_dir" -o FSTYPE 2>/dev/null) == "fuse.gocryptfs" ]]; then
+    echo open
+  else
+    echo closed
+  fi
+}
+
+say() {
+  if (( ! quiet )); then
+    echo "$@"
+  fi
+}
+
+open_vault() {
+  case $(vault_state) in
+    unset)
+      echo "The Vault is not set up yet. Run: omarchy-setup-security-vault" >&2
+      return 2
+      ;;
+    open)
+      say "The Vault is already open at $mount_dir."
+      return 0
+      ;;
+  esac
+
+  # The password prompt needs a terminal. Started from a keybind or the menu
+  # there is none, so hand over to the floating terminal other commands use.
+  if [[ ! -t 0 ]]; then
+    exec omarchy-launch-floating-terminal-with-presentation "omarchy-vault open"
+  fi
+
+  if omarchy-cmd-missing gocryptfs; then
+    echo "gocryptfs is not installed. Run: omarchy-setup-security-vault" >&2
+    return 2
+  fi
+
+  mkdir -p "$mount_dir"
+  echo "Enter your Vault password."
+  if gocryptfs "$cipher_dir" "$mount_dir"; then
+    echo "The Vault is open at $mount_dir. It closes when you lock or suspend."
+  else
+    echo "Could not open the Vault. Wrong password, or $mount_dir is not an empty folder." >&2
+    return 1
+  fi
+}
+
+close_vault() {
+  if [[ $(vault_state) != "open" ]]; then
+    say "The Vault is already closed."
+    return 0
+  fi
+
+  # Never force this (no lazy or forced unmount): detaching a busy mount would
+  # leave programs holding files that still read as plain text, and could lose
+  # what they were writing. A busy Vault stays open and says so.
+  if fusermount3 -u "$mount_dir" 2>/dev/null; then
+    say "The Vault is closed."
+  else
+    omarchy-notification-send -u critical -g 󰌾 "$(omarchy-i18n vault.stillOpen)" \
+      "$(omarchy-i18n vault.stillOpenBody "$mount_dir")" >/dev/null 2>&1 || true
+    echo "The Vault is still open: something is using $mount_dir." >&2
+    return 1
+  fi
+}
+
+# With a state name, answer only through the exit code so menu guards can ask
+# "is it closed?" in one call. Without one, print the state and map it to
+# 0 open, 1 closed, 2 not set up.
+vault_status() {
+  local state
+  state=$(vault_state)
+
+  if [[ -n $expected ]]; then
+    [[ $state == "$expected" ]]
+  else
+    say "$state"
+    case $state in
+      open) return 0 ;;
+      closed) return 1 ;;
+      *) return 2 ;;
+    esac
+  fi
+}
+
+case $action in
+  open) open_vault ;;
+  close) close_vault ;;
+  status) vault_status ;;
+  *)
+    echo "Usage: omarchy-vault open|close|status [--quiet]" >&2
+    exit 64
+    ;;
+esac

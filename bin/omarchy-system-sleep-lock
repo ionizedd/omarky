@@ -110,6 +110,11 @@ report_unsecured() {
 request_lock
 sync_clamshell
 
+# Close the encrypted Vault before the machine sleeps (no-op if it is closed or
+# not set up). Bounded like every other step; a busy Vault stays open and the
+# command notifies, which must not hold up the suspend.
+timeout --kill-after=0.1s 2s omarchy-vault close --quiet || true
+
 # The trailing sleep can overshoot the deadline by one interval, which is well
 # inside the reserve derive_budget_ms already held back for logind.
 while (( $(remaining_ms) > 0 )); do

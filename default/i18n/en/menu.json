@@ -324,6 +324,12 @@
   "trigger.toggle.crash-capture-off": {
     "label": "Crash Capture Off"
   },
+  "trigger.vault-open": {
+    "label": "Open Vault"
+  },
+  "trigger.vault-close": {
+    "label": "Close Vault"
+  },
   "trigger.emoji": {
     "label": "Emoji"
   },
@@ -658,6 +664,9 @@
   },
   "setup.security.sudoless-docker": {
     "label": "Sudoless Docker"
+  },
+  "setup.security.vault": {
+    "label": "Vault"
   },
   "setup.security.passwordless-sudo": {
     "label": "Passwordless Sudo"
@@ -1024,6 +1033,9 @@
   },
   "remove.security.kernel-hardening": {
     "label": "Kernel Hardening"
+  },
+  "remove.security.vault": {
+    "label": "Vault"
   },
   "remove.ai.hermes": {
     "label": "Hermes Desktop"

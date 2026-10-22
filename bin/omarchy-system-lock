@@ -7,6 +7,10 @@
 
 omarchy-shell lock lock >/dev/null
 
+# Close the encrypted Vault too (no-op if it is closed or not set up). Menu,
+# keybind, lid-close and idle locks all come through here.
+omarchy-vault close --quiet || true
+
 # Set keyboard layout to default (first layout)
 hyprctl switchxkblayout all 0 > /dev/null 2>&1
 
