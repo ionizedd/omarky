@@ -86,6 +86,14 @@ for cp in glob.glob('default/i18n/*/*.json'):
     if not any(k in renamed_literals for k in d): continue
     d2 = {renamed_literals.get(k, k): (renamed_literals.get(v, v) if v == k else v) for k, v in d.items()}
     open(cp, 'w', encoding='utf-8').write(json.dumps(d2, indent=2, ensure_ascii=False) + ('\n' if raw.endswith('\n') else '')); changed += 1
+# strings upstream allowlisted as 'no translation needed' follow the rename too
+ap = 'default/i18n/extract-allowlist.json'
+if os.path.exists(ap):
+    raw = open(ap, encoding='utf-8').read(); d = json.loads(raw)
+    new_list = [renamed_literals.get(x, x) for x in d.get('strings', [])]
+    if new_list != d.get('strings'):
+        d['strings'] = new_list
+        open(ap, 'w', encoding='utf-8').write(json.dumps(d, indent=2, ensure_ascii=False) + ('\n' if raw.endswith('\n') else '')); changed += 1
 for p, old, new in REPLACE:
     if os.path.exists(p):
         s = open(p, encoding='utf-8').read()
