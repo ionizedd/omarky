@@ -78,6 +78,7 @@ if os.path.exists(p):
 # flat catalogs (English text -> translation): rename the key (and English value) of every literal we renamed
 import json, glob
 for cp in glob.glob('default/i18n/*/*.json'):
+    if os.path.basename(cp) == 'keybindings.json': continue   # keyed by the Hyprland binding text, which we leave alone
     raw = open(cp, encoding='utf-8').read()
     try: d = json.loads(raw)
     except Exception: continue
