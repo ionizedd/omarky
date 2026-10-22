@@ -1,0 +1,51 @@
+#!/bin/bash
+
+# omarchy:summary=Create the encrypted Vault folder (~/Vault) with gocryptfs
+
+set -e
+
+cipher_dir=${OMARKY_VAULT_CIPHER:-$HOME/.local/share/omarky/vault}
+mount_dir=${OMARKY_VAULT_MOUNT:-$HOME/Vault}
+
+# A Vault left behind by removing gocryptfs only needs the package back.
+if ! omarchy-vault status unset; then
+  omarchy-pkg-add gocryptfs
+  echo "The Vault is already set up. Open it with: omarchy vault open"
+  echo "Its encrypted files are in $cipher_dir"
+  exit 0
+fi
+
+omarchy-pkg-add gocryptfs
+
+echo ""
+echo "Omarky Vault: an encrypted folder at $mount_dir"
+echo ""
+echo "While the Vault is open, $mount_dir shows your files as normal. While it is"
+echo "closed, only encrypted data sits in $cipher_dir. Omarky closes it for you"
+echo "when you lock the screen or suspend."
+echo ""
+echo "⚠️  There is NO password recovery. If you forget the password, the files in"
+echo "the Vault are gone for good. gocryptfs will also print a MASTERKEY: copy it"
+echo "somewhere safe (a password manager, a printout). It is the only other way in."
+echo ""
+
+if ! gum confirm --affirmative "$(omarchy-i18n common.yes)" --negative "$(omarchy-i18n common.no)" "Create the Vault now?"; then
+  echo "Aborted. No changes made."
+  exit 0
+fi
+
+mkdir -p -m 700 "$cipher_dir"
+if ! gocryptfs -init "$cipher_dir"; then
+  echo "Could not create the Vault. Nothing was changed." >&2
+  rmdir "$cipher_dir" 2>/dev/null || true
+  exit 1
+fi
+
+mkdir -p "$mount_dir"
+
+echo ""
+echo "Vault created. Store the masterkey above before you continue."
+read -r -p "Press Enter once it is saved..."
+echo ""
+echo "Open it any time with: omarchy vault open (Trigger > Open Vault)"
+echo "Your encrypted files are in $cipher_dir"

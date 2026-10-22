@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# omarchy:summary=Close the Vault and optionally remove gocryptfs (your encrypted files are kept)
+
+cipher_dir=${OMARKY_VAULT_CIPHER:-$HOME/.local/share/omarky/vault}
+mount_dir=${OMARKY_VAULT_MOUNT:-$HOME/Vault}
+
+# A Vault that cannot be closed is in use; leave everything as it is.
+if ! omarchy-vault close; then
+  echo "Close whatever is using the Vault, then run this again."
+  exit 1
+fi
+
+# Only an empty, unmounted folder goes: it is just the mountpoint.
+rmdir "$mount_dir" 2>/dev/null || true
+
+echo ""
+echo "Your encrypted files were NOT deleted. They are in:"
+echo "  $cipher_dir"
+echo "Deleting that folder destroys the Vault's data for good, and there is no"
+echo "way to get it back. Without gocryptfs and your password it cannot be opened."
+echo ""
+
+if omarchy-pkg-present gocryptfs; then
+  if gum confirm --affirmative "$(omarchy-i18n common.yes)" --negative "$(omarchy-i18n common.no)" "Also remove the gocryptfs package? You need it to open the Vault."; then
+    omarchy-pkg-drop gocryptfs
+    echo "gocryptfs removed. Run omarchy-setup-security-vault to open the Vault again."
+  else
+    echo "gocryptfs kept."
+  fi
+fi
