@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# omarchy:summary=Edit, set, or reset screensaver branding
+# omarchy:summary=Edit, set, or reset screensaver branding (reset = your name in ASCII)
 # omarchy:group=branding
 # omarchy:name=screensaver
 # omarchy:args=<image|text|reset>
@@ -19,7 +19,7 @@ text)
   omarchy-launch-editor ~/.config/omarchy/branding/screensaver.txt >/dev/null 2>&1 && omarchy-launch-screensaver force >/dev/null 2>&1
   ;;
 reset)
-  cp "$OMARCHY_PATH/logo.txt" ~/.config/omarchy/branding/screensaver.txt && omarchy-launch-screensaver force >/dev/null 2>&1
+  { omarchy-branding-screensaver-name || cp "$OMARCHY_PATH/logo.txt" ~/.config/omarchy/branding/screensaver.txt; } && omarchy-launch-screensaver force >/dev/null 2>&1
   ;;
 *)
   echo "Usage: omarchy-branding-screensaver <image|text|reset>" >&2

@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# omarchy:summary=Set the screensaver to the user's name in ASCII art
+# omarchy:group=branding
+# omarchy:name=screensaver-name
+# omarchy:args=[name]
+# omarchy:examples=omarchy branding screensaver-name | omarchy branding screensaver-name Fleagle
+
+# With no name given, uses the first word of the account's full name, then the
+# login name. The font draws letters only, so digits and punctuation drop out;
+# if nothing is left the screensaver is left as it was and this exits 1.
+
+set -uo pipefail
+
+name="${*:-}"
+[[ -n ${name//[[:space:]]/} ]] || name="${OMARCHY_USER_NAME:-}"
+[[ -n ${name//[[:space:]]/} ]] || name=$(getent passwd "${USER:-$(id -un)}" | cut -d: -f5 | cut -d, -f1)
+[[ -n ${name//[[:space:]]/} ]] || name="${USER:-$(id -un)}"
+
+first="${name%%[[:space:]]*}"
+art=$(omarchy-ascii "$first" 2>/dev/null) || art=""
+# Fall back to the login name when the full name had no drawable letters.
+if [[ -z ${art//[[:space:]]/} ]]; then
+  art=$(omarchy-ascii "${USER:-$(id -un)}" 2>/dev/null) || art=""
+fi
+[[ -n ${art//[[:space:]]/} ]] || exit 1
+
+mkdir -p ~/.config/omarchy/branding
+printf '%s\n' "$art" >~/.config/omarchy/branding/screensaver.txt
