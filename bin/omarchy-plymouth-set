@@ -294,6 +294,7 @@ run_root_transaction() {
       copy_trusted_file "$source_root/default/sddm/omarchy/Main.qml" "$sddm_stage/Main.qml"
       sed -i \
         -e "s/#1a1b26/#__OMARCHY_SDDM_BG__/g" \
+        -e "s/#0f0c10/#__OMARCHY_SDDM_BG__/g" \
         -e "s/#ffffff/#__OMARCHY_SDDM_TEXT__/g" \
         -e "s/#__OMARCHY_SDDM_BG__/#$bg_hex/g" \
         -e "s/#__OMARCHY_SDDM_TEXT__/#$text_hex/g" \

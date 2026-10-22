@@ -8,7 +8,7 @@ from fontTools.ttLib import TTFont
 from fontTools.pens.ttGlyphPen import TTGlyphPen
 
 R = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))  # runtime repo root
-GREEN = (168, 205, 118, 255)   # matches the existing logo colour
+GREEN = (240, 143, 189, 255)   # boot + login wordmark: Morganite accent (themes/morganite, the default theme)
 ICON_GREEN = (158, 206, 106, 255)
 
 # The Omarky mark: a cell. Membrane ring, off-centre nucleus, one organelle. (1 = filled)

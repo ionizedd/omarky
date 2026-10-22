@@ -159,6 +159,27 @@ def preview(path, wall):
             d.rounded_rectangle((x0 + 60, y, x0 + 60 + w, y + 22), 8, fill=rgb(PALETTE[col], 210))
     im.convert('RGB').save(path, optimize=True)
 
+def tint(path, color):
+    """Same as omarchy-plymouth-set's `magick +level-colors C,C`: every pixel becomes C, alpha kept."""
+    im = Image.open(path).convert('RGBA'); a = im.getchannel('A')
+    out = Image.new('RGBA', im.size, color[:3] + (255,)); out.putalpha(a); out.save(path)
+
+def defaults():
+    """Boot splash and login screen defaults, recoloured the way omarchy-plymouth-set-by-theme would for Morganite
+    (background + foreground from the palette, failed states in red), so a fresh install never shows Tokyo Night."""
+    bg, fg, red = PALETTE['background'], rgb(PALETTE['foreground']), rgb(PALETTE['red'])
+    r, g, b = (int(bg[i:i + 2], 16) / 255 for i in (1, 3, 5))
+    p = f'{R}/default/plymouth/omarchy.script'; s = open(p).read().split('\n')
+    for i, l in enumerate(s):
+        for k in ('Top', 'Bottom'):
+            if l.startswith(f'Window.SetBackground{k}Color'): s[i] = f'Window.SetBackground{k}Color({r:.3f}, {g:.3f}, {b:.3f});'
+    open(p, 'w').write('\n'.join(s))
+    for a in ('bullet', 'entry', 'lock', 'progress_bar'): tint(f'{R}/default/plymouth/{a}.png', fg)
+    q = f'{R}/default/sddm/omarchy/Main.qml'; s = open(q).read()
+    open(q, 'w').write(s.replace('color: "#1a1b26"', f'color: "{bg}"'))
+    for a in ('bullet', 'entry', 'lock'): tint(f'{R}/default/sddm/omarchy/{a}.png', fg)
+    for a in ('entry', 'lock'): tint(f'{R}/default/sddm/omarchy/{a}-failed.png', red)
+
 if __name__ == '__main__':
     os.makedirs(f'{T}/backgrounds', exist_ok=True)
     colors_toml()
@@ -169,4 +190,5 @@ if __name__ == '__main__':
     unlock_png(f'{T}/unlock.png')
     preview_unlock(f'{T}/preview-unlock.png')
     preview(f'{T}/preview.png', walls[0][1])
+    if '--no-defaults' not in sys.argv: defaults()
     print('wrote', T)
