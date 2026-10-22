@@ -200,13 +200,14 @@ omarchy_prompt_hostname() {
   done
 }
 
-# A fresh machine often hasn't joined a network yet, so the geo guess fails
-# often; guard it or a `set -e` caller dies before the filter fallback.
+# Omarky never asks a geo-IP service where this machine is: the timezone is
+# picked from the list, nothing leaves the machine. (`omarchy-update-time` /
+# the Setup menu can still auto-detect later, on request.)
 omarchy_prompt_timezone() {
   local guess status
-  # A preset install media names its timezone; otherwise guess from the network.
+  # A preset install media names its timezone. Omarky never guesses it from the
+  # network (no geo-IP lookup); without a preset it is a plain pick from the list.
   guess=${OMARCHY_FORM_TIMEZONE_DEFAULT:-}
-  [[ -n $guess ]] || guess=$(tzupdate -p 2>/dev/null) || guess=""
 
   if [[ -n $guess ]]; then
     timezone=$(timedatectl list-timezones | gum choose --height 10 --selected "$guess" --header "Timezone") && status=0 || status=$?

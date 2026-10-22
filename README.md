@@ -4,7 +4,7 @@ Omarky is a private, personal Linux built on [Omarchy](https://omarchy.org) (Arc
 
 It is a fork, and it stays close to upstream on purpose: internal names (`omarchy-*` commands, `~/.config/omarchy`, package names) are unchanged so upstream improvements merge cleanly. What differs:
 
-- **Private by default.** Hardened Firefox with DuckDuckGo is the browser; Chromium installs on demand. No Google services are enabled; telemetry is off.
+- **Private by default.** Hardened Firefox with DuckDuckGo is the browser; Chromium installs on demand. No Google services or Google web-app shortcuts; telemetry is off. Nothing guesses your location from your IP: setup asks you for the timezone, and the weather widget is opt-in (`omarchy plugin enable omarchy.weather --section center`).
 - **An installer that doesn't wipe your drive.** Besides "Full disk install" it offers a free-space install and "Replace one partition", which erases only the partition you choose and leaves every other partition on the disk untouched.
 - **Your name on the screensaver.** Each user's screensaver is their own first name in ASCII art.
 - **Its own look.** Omarky wordmark, cell mark, boot splash, login screen and install progress, all generated from one 15x15 mask by `tools/omarky/gen-branding.py`.

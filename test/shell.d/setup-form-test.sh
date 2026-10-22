@@ -27,10 +27,12 @@ printf '%s\n' "${line#*:}"
 exit "${line%%:*}"
 EOF
 
-cat >"$tmp_dir/tzupdate" <<'EOF'
+cat >"$tmp_dir/tzupdate" <<EOF
 #!/bin/bash
-[[ -n ${TZ_GUESS:-} ]] || exit 1
-printf '%s\n' "$TZ_GUESS"
+# Omarky: the setup form must never call tzupdate (a geo-IP lookup).
+touch "$tmp_dir/tzupdate.called"
+[[ -n \${TZ_GUESS:-} ]] || exit 1
+printf '%s\\n' "\$TZ_GUESS"
 EOF
 
 cat >"$tmp_dir/timedatectl" <<'EOF'
@@ -249,19 +251,15 @@ pass "hostname prompt propagates Esc without dying under set -e"
 
 # Timezone
 
-TZ_GUESS=Europe/Copenhagen run_prompt omarchy_prompt_timezone "0:Europe/Copenhagen"
-assert_status 0 "timezone prompt accepts the geo guess"
-[[ $(field timezone) == "Europe/Copenhagen" ]] || fail "timezone prompt keeps the chosen timezone"
-grep -qF -- '--selected Europe/Copenhagen' "$GUM_ARGS" || fail "timezone prompt preselects the geo guess"
+# Omarky: no geo-IP guess, even when tzupdate is installed and would answer.
+TZ_GUESS=Europe/Copenhagen run_prompt omarchy_prompt_timezone "0:America/Chicago"
+assert_status 0 "timezone prompt works"
+[[ $(field timezone) == "America/Chicago" ]] || fail "timezone prompt keeps the chosen timezone"
+[[ ! -e $tmp_dir/tzupdate.called ]] || fail "timezone prompt must not make a geo-IP lookup"
+[[ $(head -n 1 "$GUM_ARGS") == filter* ]] || fail "timezone prompt is a plain filter list"
+! grep -qF -- '--selected' "$GUM_ARGS" || fail "timezone prompt preselects nothing"
 grep -qF UTC "$tmp_dir/stdin.1" || fail "timezone prompt offers the system timezone list"
-pass "timezone prompt preselects the geo guess when one is available"
-
-# An unnetworked first boot has no guess, and the fallback has to survive `set -e`
-run_prompt omarchy_prompt_timezone "0:America/Chicago"
-assert_status 0 "timezone prompt survives a failed geo guess"
-[[ $(field timezone) == "America/Chicago" ]] || fail "timezone prompt keeps the filtered timezone"
-[[ $(head -n 1 "$GUM_ARGS") == filter* ]] || fail "timezone prompt filters when there is no geo guess"
-pass "timezone prompt falls back to filtering when the geo guess fails"
+pass "timezone prompt makes no geo-IP lookup and offers the full list"
 
 OMARCHY_FORM_TIMEZONE_DEFAULT=Asia/Shanghai TZ_GUESS=Europe/Copenhagen run_prompt omarchy_prompt_timezone "0:Asia/Shanghai"
 assert_status 0 "a preset timezone prompt succeeds"

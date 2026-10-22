@@ -37,18 +37,17 @@ jq -e '
   (.bar.layout.centerEnd | ids) as $ids |
   ($ids | index("omarchy.weather")) as $weather |
   ($ids | index("omarchy.system-update")) as $update |
-  $weather != null and $update == $weather + 1
+  $weather == null and $update != null
 ' "$ROOT/config/omarchy/shell.json" >/dev/null
-pass "default center layout keeps update next to weather"
+pass "default center layout has no weather widget (opt-in: it asks wttr.in for the city) and keeps update"
 
 jq -e '
   def ids: map(.id // .);
   (.bar.layout.centerEnd | ids) as $ids |
   ($ids | index("omarchy.elsewhen")) as $elsewhen |
-  ($ids | index("omarchy.weather")) as $weather |
-  $elsewhen == 0 and $weather > $elsewhen
+  $elsewhen == 0
 ' "$ROOT/config/omarchy/shell.json" >/dev/null
-pass "default center layout puts elsewhen immediately after the clock and before weather"
+pass "default center layout puts elsewhen immediately after the clock"
 
 # Every CLI write goes through the normalizer, which keeps every bar section a
 # list, the ones beside the center box included.
