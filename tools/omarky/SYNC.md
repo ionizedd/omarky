@@ -11,7 +11,7 @@ A one-off hand rename drifts and conflicts constantly, so Omarky's rebrand is **
 
 ## Procedure (per repo)
 1. `git fetch upstream`
-2. `git checkout -b omarky-sync upstream/<quattro|master>` — start from upstream, not from our branch.
+2. `git checkout -B omarky-sync upstream/<quattro|master>` (`-B` resets the branch if it exists from a previous sync) — start from upstream, not from our branch.
 3. Cherry-pick **only our substantive commits**, in order, skipping the generated rename commit. Use `git log omarky --author=ionizedd --reverse`.
    Resolve conflicts by keeping upstream's new code and re-applying our intent (e.g. keep their `OMARCHY_FORM_TIMEZONE_DEFAULT`, drop the geo-IP fallback).
 4. Re-run the rebrand scripts, commit the generated result as its own commit.

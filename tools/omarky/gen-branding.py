@@ -102,7 +102,9 @@ def font_glyph(path):
     glyf[name] = pen.glyph(); f.save(path); return name, (x0, y0, x1, y1)
 
 if __name__ == '__main__':
-    only = sys.argv[1:] or ['png', 'svg', 'icon', 'txt', 'font']
+    KINDS = ['png', 'svg', 'icon', 'txt', 'font']
+    only = sys.argv[1:] or KINDS
+    if bad := [a for a in only if a not in KINDS]: sys.exit(f'unknown: {" ".join(bad)} (choose from {" ".join(KINDS)})')
     if 'png' in only:
         print('wordmark grid (w,h,scale):', wordmark_png(f'{R}/default/plymouth/logo.png'))
         wordmark_png(f'{R}/default/sddm/omarchy/logo.png')

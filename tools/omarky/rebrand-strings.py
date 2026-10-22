@@ -33,10 +33,11 @@ PINNED = ('has no $channel channel for', 'has no $pacman_channel channel for', '
 REPLACE = [
  ('install/provisioning/setup-form.sh', '(like dhh)', '(like fleagle)'),
  ('bin/omarchy-provision-owner', 'Beautiful, Fun & Agentic Linux by DHH', 'A private, personal Linux — yours.'),
+ ('bin/omarchy-agent-crash', 'reporting upstream to Omarky', 'reporting upstream to Omarchy'),   # upstream IS Omarchy
 ]
 WORD = re.compile(r'(?<![A-Za-z0-9_])Omarchy(?![A-Za-z0-9_])')
 # lines that match, parse or compare text (efibootmgr labels, grep/sed/awk patterns, [[ == ]]) are logic, not display
-LOGIC = re.compile(r'\b(grep|egrep|sed|awk|efibootmgr|rg|cut)\b|\[\[:|=~|\[\[ .* == |\bcase\b')
+LOGIC = re.compile(r'\b(grep|egrep|sed|awk|efibootmgr|rg|cut)\b|\[\[:|=~|\[\[ .* == |^\s*case\b.*\bin\s*$')
 URLISH = re.compile(r'https?://\S*Omarchy|github\.com/\S*Omarchy|\.Omarchy|Omarchy\.\w')
 
 changed = 0
@@ -59,8 +60,9 @@ for root in ['shell', 'default/omarchy', 'config', 'bin', 'install']:
                     new = l.replace('"label":"Omarchy"', '"label":"Omarchy manual"')
                 else:
                     new = WORD.sub('Omarky', l)
+                    if new != l:   # only real renames feed the i18n catalogs, not the "Omarchy manual" relabel
+                        for lit in LITERAL.findall(l): renamed_literals[lit] = WORD.sub('Omarky', lit)
                 if new != l:
-                    for lit in LITERAL.findall(l): renamed_literals[lit] = WORD.sub('Omarky', lit)
                     lines[i] = new; n += 1
             if n:
                 open(p, 'w', encoding='utf-8').write('\n'.join(lines)); changed += n
