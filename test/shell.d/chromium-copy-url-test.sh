@@ -82,12 +82,26 @@ grep -q 'user/chromium.sh' "$ROOT/install/user/all.sh" ||
   fail "user install runs the Chromium native messaging host setup"
 
 fresh_home="$TMPDIR/fresh-install"
-HOME="$fresh_home" OMARCHY_PATH="$ROOT" PATH="$ROOT/bin:$PATH" \
+# Chromium is install-on-demand in Omarky: the hosts are wired up only when it
+# is present, and left alone when it is not.
+mkdir -p "$TMPDIR/chromium-bin" "$TMPDIR/no-chromium-home"
+printf '#!/bin/bash\n' >"$TMPDIR/chromium-bin/chromium"
+chmod +x "$TMPDIR/chromium-bin/chromium"
+
+HOME="$fresh_home" OMARCHY_PATH="$ROOT" PATH="$TMPDIR/chromium-bin:$ROOT/bin:$PATH" \
   bash -euo pipefail -c 'source "$ROOT/install/user/chromium.sh"'
 
 [[ -f $fresh_home/.config/chromium/NativeMessagingHosts/com.omarchy.copy_url.json ]] ||
   fail "fresh install registers the copy-url native messaging host"
 pass "fresh install registers the copy-url native messaging host"
+
+if ! command -v chromium >/dev/null 2>&1; then
+  HOME="$TMPDIR/no-chromium-home" OMARCHY_PATH="$ROOT" PATH="$ROOT/bin:$PATH" \
+    bash -euo pipefail -c 'source "$ROOT/install/user/chromium.sh"'
+  [[ ! -e $TMPDIR/no-chromium-home/.config/chromium ]] ||
+    fail "no Chromium means no native messaging host setup"
+  pass "no Chromium means no native messaging host setup"
+fi
 
 copied_url=$(bash -c '
   source "$1"

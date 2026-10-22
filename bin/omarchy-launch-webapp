@@ -10,6 +10,13 @@ google-chrome* | brave* | microsoft-edge* | opera* | vivaldi* | helium*) ;;
 *) browser="chromium.desktop" ;;
 esac
 
+# App windows (--app=) only exist in Chromium-family browsers. Omarky ships
+# Firefox and installs Chromium on demand, so with no Chromium-family browser
+# present the URL opens as an ordinary tab in the default browser instead.
+if [[ ! -f /usr/share/applications/$browser && ! -f ~/.local/share/applications/$browser ]]; then
+  exec omarchy-launch-browser "$@"
+fi
+
 browser_exec=$(sed -n 's/^Exec=\([^ ]*\).*/\1/p' {~/.local,~/.nix-profile,/usr}/share/applications/$browser 2>/dev/null | head -1)
 
 if ! omarchy-cmd-browser-handoff "$browser_exec" --app="$1" "${@:2}"; then

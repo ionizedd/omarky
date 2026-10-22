@@ -49,7 +49,7 @@ OMARCHY_INSTALL_USER="" bash -eE "$ROOT/install/config/browser-policy.sh"
 [[ ! -f $TMPDIR/usermod.calls ]] || fail "usermod not called without an install user"
 [[ ! -f $TMPDIR/groupadd.calls ]] || ! grep -F omarchy-browser-policy "$TMPDIR/groupadd.calls" >/dev/null ||
   fail "browser-policy group is not created"
-grep -F -- '-d -m 0755 -o root -g root /etc/chromium/policies/managed' "$TMPDIR/install.calls" >/dev/null ||
+grep -F -- '-d -m 0755 -o root -g root /usr/lib/firefox/distribution' "$TMPDIR/install.calls" >/dev/null ||
   fail "browser-policy directory is created root-owned"
 pass "deferred provisioning records no privileged groups"
 

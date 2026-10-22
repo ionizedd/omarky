@@ -1,6 +1,7 @@
-# Chromium ships in the base packages, so it never goes through
-# omarchy-install-browser, and fresh installs mark every migration as already
-# applied. Without this, the bundled extensions load but have no native
-# messaging host to talk to.
-omarchy-install-chromium-copy-url
-omarchy-install-chromium-ytdlp
+# Chromium is no longer in the base packages (Firefox is). If someone installed it
+# before this ran, wire up its native messaging hosts; otherwise there is nothing
+# to do — omarchy-install-browser chromium does it when Chromium is added.
+if omarchy-cmd-present chromium; then
+  omarchy-install-chromium-copy-url
+  omarchy-install-chromium-ytdlp
+fi
