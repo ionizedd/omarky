@@ -662,6 +662,15 @@
   "setup.security.passwordless-sudo": {
     "label": "Passwordless Sudo"
   },
+  "setup.security.tailscale-ssh": {
+    "label": "Tailscale SSH"
+  },
+  "setup.security.kernel-hardening": {
+    "label": "Kernel Hardening"
+  },
+  "setup.security.exposure": {
+    "label": "What's Exposed"
+  },
   "setup.config.hyprland": {
     "label": "Hyprland"
   },
@@ -1009,6 +1018,12 @@
   },
   "remove.security.sudoless-docker": {
     "label": "Sudoless Docker"
+  },
+  "remove.security.tailscale-ssh": {
+    "label": "Tailscale SSH"
+  },
+  "remove.security.kernel-hardening": {
+    "label": "Kernel Hardening"
   },
   "remove.ai.hermes": {
     "label": "Hermes Desktop"

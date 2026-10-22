@@ -1,0 +1,97 @@
+#!/bin/bash
+
+# omarchy:summary=Show what this machine exposes: listening ports, firewall, Tailscale, known-vulnerable packages
+# omarchy:args=[--no-sudo]
+
+# Read-only. Every section degrades to a one-line note when its tool is missing,
+# so the report still runs on a minimal or broken system.
+
+NO_SUDO=false
+[[ ${1:-} == "--no-sudo" ]] && NO_SUDO=true
+
+as_root() {
+  if $NO_SUDO; then
+    "$@"
+  else
+    sudo "$@"
+  fi
+}
+
+section() {
+  echo ""
+  echo "== $1"
+}
+
+section "Listening on the network (not localhost)"
+# Left out: local-only listeners (unreachable from outside), multicast groups,
+# and UDP sockets on ephemeral ports (32768+), which are client-side sockets
+# browsers and chat apps open for calls, not services waiting for connections.
+listeners=$(as_root ss -Htulpn 2>/dev/null | awk '
+  { n = split($5, a, ":"); port = a[n] + 0 }
+  $5 ~ /^(127\.|\[::1\]|::1|\[::ffff:127\.|22[4-9]\.|23[0-9]\.|\[ff)/ { next }
+  $1 == "udp" && port >= 32768 { next }
+  !seen[$1 $5]++')
+if [[ -n $listeners ]]; then
+  echo "$listeners" | awk '{ printf "  %-4s %-28s %s\n", $1, $5, $7 }'
+else
+  echo "  nothing"
+fi
+
+section "Firewall"
+if omarchy-cmd-present ufw; then
+  firewall=$(as_root ufw status verbose 2>/dev/null)
+  if [[ -n $firewall ]]; then
+    echo "$firewall" | sed 's/^/  /'
+  else
+    echo "  could not read ufw status (it needs sudo; run without --no-sudo)"
+  fi
+else
+  echo "  ufw is not installed: every listener above is reachable from your network"
+fi
+
+section "Tailscale"
+if omarchy-cmd-present tailscale && tailscale status >/dev/null 2>&1; then
+  prefs=$(tailscale debug prefs 2>/dev/null)
+  ssh_on=$(jq -r '.RunSSH // false' <<<"$prefs" 2>/dev/null)
+  routes=$(jq -r '.RouteAll // false' <<<"$prefs" 2>/dev/null)
+  shields=$(jq -r '.ShieldsUp // false' <<<"$prefs" 2>/dev/null)
+  echo "  connected; Tailscale SSH: $ssh_on; accepts subnet routes: $routes; shields up: $shields"
+  if tailscale funnel status 2>/dev/null | grep -q 'Funnel on'; then
+    echo -e "  \e[31mFunnel is ON: these are reachable from the whole internet, not just the tailnet:\e[0m"
+    tailscale funnel status 2>/dev/null | grep -F '(Funnel on)' | sed 's/^[# -]*/    /'
+  fi
+  echo "  peers:"
+  tailscale status 2>/dev/null | awk 'NR > 1 && /^[0-9]/' | sed 's/^/    /'
+elif omarchy-cmd-present tailscale; then
+  echo "  installed, not connected"
+else
+  echo "  not installed"
+fi
+
+section "Kernel hardening"
+if [[ -f /etc/sysctl.d/90-omarky-hardening.conf ]]; then
+  echo "  on"
+else
+  echo "  off (Setup > Security > Kernel Hardening)"
+fi
+
+section "Packages with known vulnerabilities"
+if omarchy-cmd-present arch-audit; then
+  vulnerable=$(arch-audit --upgradable 2>/dev/null)
+  if [[ -n $vulnerable ]]; then
+    echo "$vulnerable" | sed 's/^/  /'
+    echo "  (fixed versions exist: update the system)"
+  else
+    echo "  none with a fix waiting"
+  fi
+else
+  echo "  arch-audit is not installed (omarchy-pkg-add arch-audit)"
+fi
+
+section "Last update and snapshot"
+last_upgrade=$(grep -a 'starting full system upgrade' /var/log/pacman.log 2>/dev/null | tail -1 | cut -c2-17)
+echo "  last full upgrade: ${last_upgrade:-unknown}"
+if omarchy-cmd-present snapper; then
+  last_snapshot=$(as_root snapper -c root list --columns date 2>/dev/null | tail -1 | sed 's/^[ |]*//')
+  echo "  last root snapshot: ${last_snapshot:-unknown}"
+fi

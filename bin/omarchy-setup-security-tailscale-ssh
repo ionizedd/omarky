@@ -1,0 +1,50 @@
+#!/bin/bash
+
+# omarchy:summary=Let tailnet members SSH in through Tailscale SSH (no sshd, no open port)
+# omarchy:requires-sudo=true
+
+set -e
+
+policy_template="$OMARCHY_PATH/default/tailscale/tailnet-policy.hujson"
+policy_copy="$HOME/.config/omarky/tailnet-policy.hujson"
+
+if omarchy-cmd-missing tailscale; then
+  echo "Tailscale is not installed. Install it first: Install > Service > Tailscale."
+  exit 1
+fi
+
+if ! tailscale status >/dev/null 2>&1; then
+  echo "Tailscale is installed but not connected. Run 'sudo tailscale up' and try again."
+  exit 1
+fi
+
+echo ""
+echo "Tailscale SSH lets someone on your tailnet open a shell on this PC."
+echo "There is no SSH server and no open port: Tailscale handles the login."
+echo "WHO may log in is decided by your tailnet policy in the admin console,"
+echo "not on this machine. Without a policy that allows it, nobody can."
+echo ""
+
+sudo tailscale set --ssh
+
+mkdir -p "${policy_copy%/*}"
+if [[ ! -e $policy_copy ]]; then
+  cp "$policy_template" "$policy_copy"
+fi
+
+if systemctl is-enabled --quiet sshd 2>/dev/null; then
+  echo -e "\e[33mNote: the OpenSSH server is also enabled, so port 22 is open outside Tailscale too.\e[0m"
+  echo "If Tailscale SSH is all you need, turn it off: Remove > Security > SSHD."
+  echo ""
+fi
+
+echo "Tailscale SSH is ON for this machine."
+echo ""
+echo "Next steps (once, in the admin console):"
+echo "  1. Open $policy_copy"
+echo "     and replace OWNER@example.com with your tailnet login."
+echo "  2. Tag each PC (Machines > ... > Edit ACL tags): tag:ion-pc and tag:fleagle-pc."
+echo "  3. Paste the policy at https://login.tailscale.com/admin/acls and check 'Preview rules'."
+echo "  4. Test from the other PC: tailscale ssh $USER@$(hostname)"
+echo ""
+echo "To turn it off again: Remove > Security > Tailscale SSH."

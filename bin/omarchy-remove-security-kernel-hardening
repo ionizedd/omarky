@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# omarchy:summary=Turn off Omarky's kernel hardening settings
+# omarchy:requires-sudo=true
+
+set -e
+
+target_conf=/etc/sysctl.d/90-omarky-hardening.conf
+
+if [[ ! -e $target_conf ]]; then
+  echo "Kernel hardening is not on."
+  exit 0
+fi
+
+sudo rm -f "$target_conf"
+# Some settings (kexec, unprivileged BPF) can only be relaxed by a reboot.
+omarchy-state set reboot-required
+
+echo "Kernel hardening is OFF. The old values come back after a reboot."
+if [[ -z ${OMARCHY_DEFER_REBOOT:-} ]] && gum confirm --affirmative "$(omarchy-i18n common.yes)" --negative "$(omarchy-i18n common.no)" "Reboot now?"; then
+  omarchy-system reboot
+fi

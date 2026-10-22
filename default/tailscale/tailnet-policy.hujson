@@ -1,0 +1,36 @@
+// Omarky tailnet policy for two PCs (template).
+// Paste into https://login.tailscale.com/admin/acls, then use the console's
+// "Preview rules" tab to confirm it does what the comments say BEFORE saving.
+//
+// First tag the two PCs in the admin console (Machines > ... > Edit ACL tags):
+// Ion's PC tag:ion-pc, Fleagle's PC tag:fleagle-pc. Replace OWNER@example.com
+// below with the tailnet account's login (e.g. the one shown next to every
+// machine in `tailscale status`). If you later use two separate accounts, put
+// each person's own login as the owner of their tag.
+//
+// What it allows:
+//   - the account reaches its own untagged devices (phones, laptops) as before;
+//   - each PC may SSH into the other as a normal user (never root), in "check"
+//     mode: the person re-authenticates in the browser before the shell opens;
+//   - nothing else between the two PCs. Open more ports on purpose, one line each.
+//
+// Trade-off: Tailscale treats tagged machines as owned by the tag, not by a
+// person, so Taildrop (omarchy-tailscale-send) to or from a tagged PC stops
+// working, and phones lose access to the PCs. Send files with scp over
+// Tailscale SSH instead, or add an explicit rule for a port you need.
+{
+  "tagOwners": {
+    "tag:ion-pc":     ["OWNER@example.com"],
+    "tag:fleagle-pc": ["OWNER@example.com"],
+  },
+
+  "acls": [
+    {"action": "accept", "src": ["autogroup:member"], "dst": ["autogroup:self:*"]},
+    {"action": "accept", "src": ["tag:ion-pc"],       "dst": ["tag:fleagle-pc:22"]},
+    {"action": "accept", "src": ["tag:fleagle-pc"],   "dst": ["tag:ion-pc:22"]},
+  ],
+
+  "ssh": [
+    {"action": "check", "src": ["autogroup:member"], "dst": ["tag:ion-pc", "tag:fleagle-pc"], "users": ["autogroup:nonroot"]},
+  ],
+}

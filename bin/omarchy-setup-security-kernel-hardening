@@ -1,0 +1,35 @@
+#!/bin/bash
+
+# omarchy:summary=Turn on Omarky's kernel hardening settings (experimental, opt-in)
+# omarchy:requires-sudo=true
+
+set -e
+
+source_conf="$OMARCHY_PATH/default/sysctl/90-omarky-hardening.conf"
+target_conf=/etc/sysctl.d/90-omarky-hardening.conf
+
+if [[ -f $target_conf ]] && cmp -s "$source_conf" "$target_conf"; then
+  echo "Kernel hardening is already on ($target_conf)."
+  echo "To turn it off again: Remove > Security > Kernel Hardening."
+  exit 0
+fi
+
+echo ""
+echo "This hides kernel details from normal programs, blocks a few exploit"
+echo "techniques and drops spoofed network packets. The settings were picked to"
+echo "keep games, Steam, Docker, GPU compute and Tailscale working, but they are"
+echo "still EXPERIMENTAL: after turning them on, play a game and run your usual"
+echo "AI work once. Debuggers need sudo to attach to running programs."
+echo ""
+echo "Settings: $source_conf"
+echo ""
+
+if gum confirm --affirmative "$(omarchy-i18n common.yes)" --negative "$(omarchy-i18n common.no)" "Turn on kernel hardening?"; then
+  sudo install -Dm644 "$source_conf" "$target_conf"
+  sudo sysctl --quiet --load="$target_conf"
+  echo ""
+  echo "Kernel hardening is ON (now and after every reboot)."
+  echo "If something breaks: Remove > Security > Kernel Hardening, then reboot."
+else
+  echo "Aborted. No changes made."
+fi

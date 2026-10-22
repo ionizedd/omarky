@@ -8,7 +8,9 @@ omarchy-pkg-add tailscale
 
 echo -e "\nStarting Tailscale..."
 sudo systemctl enable --now tailscaled.service
-sudo tailscale up --accept-routes
+# No --accept-routes: accepting subnet routes lets any node on the tailnet steer
+# this machine's traffic. Turn it on deliberately with: sudo tailscale set --accept-routes
+sudo tailscale up
 
 echo -e "\nAllowing $USER to manage Tailscale..."
 sudo tailscale set --operator="$USER"

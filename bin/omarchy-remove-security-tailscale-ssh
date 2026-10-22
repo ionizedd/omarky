@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# omarchy:summary=Stop accepting Tailscale SSH logins on this machine
+# omarchy:requires-sudo=true
+
+set -e
+
+if omarchy-cmd-missing tailscale; then
+  echo "Tailscale is not installed, so Tailscale SSH is already off."
+  exit 0
+fi
+
+sudo tailscale set --ssh=false
+echo "Tailscale SSH is OFF. Open sessions keep running until they end."
