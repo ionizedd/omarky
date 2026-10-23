@@ -492,7 +492,7 @@ prioritize_entries() {
 
     prio = 50
     if (match(line, /Keybindings/)) prio = 0
-    if (match(line, /Omarchy menu/))  prio = 1
+    if (match(line, /Om(archy|arky) menu/))  prio = 1
     if (match(line, /Terminal/)) prio = 2
     if (match(line, /Browser/) && !match(line, /Browser[[:space:]]*\(/) && !match(line, /SUPER SHIFT.*\+.*B.*→.*Browser/)) prio = 3
     if (match(line, /File manager/) && !match(line, /File manager \(cwd\)/))  prio = 4

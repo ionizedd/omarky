@@ -34,6 +34,8 @@ REPLACE = [
  ('install/provisioning/setup-form.sh', '(like dhh)', '(like fleagle)'),
  ('bin/omarchy-provision-owner', 'Beautiful, Fun & Agentic Linux by DHH', 'A private, personal Linux — yours.'),
  ('install/user/theme.sh', 'omarchy-theme-set "Tokyo Night"', 'omarchy-theme-set "Morganite"'),   # our own default theme
+ ('etc/fastfetch/config.jsonc', 'echo \\"Omarchy $version\\"', 'echo \\"Omarky $version\\"'),   # About / fastfetch OS line
+ ('etc/fastfetch/config.jsonc', '"color": { "1": "green" }', '"color": { "1": "blue" }'),   # logo in the theme accent (blue slot)
  ('bin/omarchy-agent-crash', 'reporting upstream to Omarky', 'reporting upstream to Omarchy'),   # upstream IS Omarchy
 ]
 WORD = re.compile(r'(?<![A-Za-z0-9_])Omarchy(?![A-Za-z0-9_])')
@@ -97,6 +99,27 @@ if os.path.exists(ap):
     if new_list != d.get('strings'):
         d['strings'] = new_list
         open(ap, 'w', encoding='utf-8').write(json.dumps(d, indent=2, ensure_ascii=False) + ('\n' if raw.endswith('\n') else '')); changed += 1
+# Keybinding descriptions are i18n keys (default/i18n/*/keybindings.json, keyed by the English text, hashed in
+# translation-manifest.json as sha256[:12]), so a renamed description must move its key, translations and hash too.
+import hashlib
+KEYBIND_RENAMES = {'Omarchy menu': 'Omarky menu'}
+for old, new in KEYBIND_RENAMES.items():
+    for cp in glob.glob('default/i18n/*/keybindings.json'):
+        raw = open(cp, encoding='utf-8').read(); d = json.loads(raw)
+        if old not in d: continue
+        d = {(new if k == old else k): (WORD.sub('Omarky', v) if k == old else v) for k, v in d.items()}
+        open(cp, 'w', encoding='utf-8').write(json.dumps(d, indent=2, ensure_ascii=False) + ('\n' if raw.endswith('\n') else '')); changed += 1
+    mp = 'default/i18n/translation-manifest.json'
+    if os.path.exists(mp):
+        m = open(mp, encoding='utf-8').read()
+        oh, nh = hashlib.sha256(old.encode()).hexdigest()[:12], hashlib.sha256(new.encode()).hexdigest()[:12]
+        m2 = m.replace(f'"keybindings:{old}": "{oh}"', f'"keybindings:{new}": "{nh}"')
+        if m2 != m: open(mp, 'w', encoding='utf-8').write(m2); changed += 1
+REPLACE += [
+ ('default/hypr/bindings/utilities.lua', '"Omarchy menu"', '"Omarky menu"'),
+ ('bin/omarchy-menu-keybindings', 'match(line, /Omarchy menu/)', 'match(line, /Om(archy|arky) menu/)'),   # user bindings may keep the old text
+ ('test/shell.d/shell-shortcuts-test.sh', "omarchy:menu.root\\tOmarchy menu'", "omarchy:menu.root\\tOmarky menu'"),
+]
 for p, old, new in REPLACE:
     if os.path.exists(p):
         s = open(p, encoding='utf-8').read()

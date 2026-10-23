@@ -3,7 +3,7 @@
   "logo": {
     "type": "file",
     "source": "~/.config/omarchy/branding/about.txt",
-    "color": { "1": "green" },
+    "color": { "1": "blue" },
     "padding": {
       "top": 2,
       "right": 6,
@@ -71,7 +71,7 @@
       "type": "command",
       "key": "\ue900 OS",
       "keyColor": "blue",
-      "text": "version=$(omarchy-version) && echo \"Omarchy $version\""
+      "text": "version=$(omarchy-version) && echo \"Omarky $version\""
     },
     {
       "type": "command",

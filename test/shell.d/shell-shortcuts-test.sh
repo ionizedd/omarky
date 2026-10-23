@@ -90,7 +90,7 @@ pass "shell bindings use global shortcuts only for what the shell registers"
 # shortcut, and none toggles one through a command any more.
 ! grep -E $'^exec\t(omarchy-menu toggle|omarchy-shell shell toggle) ' <<<"$bindings" | grep -v $'\tunlisted ' ||
   fail "default bindings toggle menus and panels through global shortcuts"
-expect_binding $'global\tomarchy:menu.root\tOmarchy menu' "SUPER+SPACE opens the menu through its shortcut"
+expect_binding $'global\tomarchy:menu.root\tOmarky menu' "SUPER+SPACE opens the menu through its shortcut"
 expect_binding $'global\tomarchy:menu.theme\tTheme menu' "the theme menu binding uses its shortcut"
 expect_binding $'global\tomarchy:panel.omarchy.clipboard\tClipboard manager' "the clipboard binding uses its shortcut"
 expect_binding $'global\tomarchy:audio.raise\tVolume up' "the volume up key steps the volume in the shell"
