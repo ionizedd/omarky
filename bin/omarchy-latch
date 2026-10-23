@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# omarchy:summary=Two-door encrypted container: one ritual opens your data, another a decoy
+# omarchy:args=create|seal|open|verify|info|genword <container.latch> [options]
+# omarchy:examples=omarchy latch create x.latch --in ledger.txt --decoy-in grocery-list.txt | omarchy latch open x.latch | omarchy latch info x.latch
+
+# latch is a single Python file shipped in $OMARCHY_PATH/default/latch (its
+# README is docs/latch.md). It needs python-cryptography for the cipher and the
+# words package for the ritual wordlist. They are optional, so they are added
+# on first use rather than with every install: through omarchy-pkg-add when a
+# terminal is there to type the sudo password into, otherwise as a sentence
+# saying what to install. Nothing else is touched.
+
+needed=(python-cryptography words)
+
+if omarchy-pkg-missing "${needed[@]}"; then
+  if [[ -t 2 ]]; then
+    echo "latch needs ${needed[*]}. Installing them now." >&2
+    omarchy-pkg-add "${needed[@]}" || exit 2
+  else
+    echo "latch: needs ${needed[*]}. Install them with: omarchy-pkg-add ${needed[*]}" >&2
+    exit 2
+  fi
+fi
+
+# -I: ignore PYTHON* variables and the current directory, so a stray module
+# beside the container cannot be imported in place of the real one.
+exec /usr/bin/python3 -I "$OMARCHY_PATH/default/latch/latch.py" "$@"
