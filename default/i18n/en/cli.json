@@ -296,6 +296,9 @@
     "other": "Remove %1 orphaned packages?"
   },
   "update.whatsNew": "What's new: %1",
+  "vault.sendFailed": "Could not send the vault to %1",
+  "vault.sendPickTitle": "Pick a latch vault to send",
+  "vault.sent": "Vault sent to %1",
   "vault.stillOpen": "Vault is still open",
   "vault.stillOpenBody": "Something is using %1. Close the programs that have its files open, then close the Vault again.",
   "webapp.iconPlaceholder": "Could not fetch favicon automatically. Enter PNG icon URL or icon name",

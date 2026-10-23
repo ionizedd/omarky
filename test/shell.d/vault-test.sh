@@ -147,3 +147,81 @@ called "pkg-drop gocryptfs" || fail "remove drops gocryptfs once confirmed"
 [[ -f $OMARKY_VAULT_CIPHER/gocryptfs.conf ]] || fail "remove never deletes the encrypted files"
 grep -q "$OMARKY_VAULT_CIPHER" "$test_dir/out" || fail "remove prints where the encrypted files are"
 pass "remove closes the Vault, asks before dropping the package, and keeps the cipher dir"
+
+# --- sending latch containers --------------------------------------------------
+#
+# `tailscale` is faked only to see which transport is chosen: `tailscale ssh`
+# runs the remote command here with $HOME pointed at a fake receiver, so the
+# receiving script (the real logic under test) runs for real.
+
+cat >"$stub_bin/tailscale" <<'STUB'
+#!/bin/bash
+echo "tailscale $*" >>"$CALLS"
+if [[ $1 == ssh ]]; then
+  shift 2
+  HOME="$RECEIVER_HOME" sh -c "$*"
+fi
+STUB
+chmod +x "$stub_bin/tailscale"
+
+export RECEIVER_HOME="$test_dir/receiver"
+mkdir -p "$RECEIVER_HOME"
+
+# A structurally valid container (header and frame hashes) needs no cipher.
+make_container() {
+  python3 -I - "$ROOT/default/latch" "$1" "$2" <<'PY'
+import sys
+sys.path.insert(0, sys.argv[1])
+import latch
+frames = []
+for i in range(2):
+    fb = latch.json.dumps({"salt": (bytes([i]) * 16).hex(), "nonce": "00" * 12, "codec": "zlib", "pad": "pow2"}).encode()
+    frames.append((fb, bytes([int(sys.argv[3])]) * 64))
+open(sys.argv[2], "wb").write(latch._build_container(frames, b"c" * 16))
+PY
+}
+
+vault_a="$test_dir/a.latch"
+make_container "$vault_a" 1
+echo "just some notes" >"$test_dir/notes.txt"
+cp "$vault_a" "$test_dir/my-rituals.latch"
+
+[[ $(status_of omarchy-vault send fleagle-pc "$test_dir/notes.txt") != 0 ]] || fail "send refuses a file that is not a latch container"
+grep -q "not a latch container" "$test_dir/err" || fail "refusing a non-container says why" "$(<"$test_dir/err")"
+called "^tailscale" && fail "a refused file never reaches tailscale"
+
+[[ $(status_of omarchy-vault send fleagle-pc "$test_dir/my-rituals.latch") != 0 ]] || fail "send refuses a file named like a rituals file"
+[[ $(status_of omarchy-vault send fleagle-pc "$vault_a" --rituals-to "$test_dir/r.txt") != 0 ]] || fail "send refuses --rituals-to"
+called "^tailscale" && fail "ritual refusals never reach tailscale"
+pass "send refuses non-containers and ritual files before touching the network"
+
+run omarchy-vault send fleagle-pc "$vault_a"
+called "^tailscale ssh fleagle-pc " || fail "send uses Tailscale SSH by default" "$(<"$calls")"
+called "^tailscale file" && fail "the default transport is not Taildrop"
+cmp -s "$vault_a" "$RECEIVER_HOME/Downloads/a.latch" || fail "the container arrives byte for byte in the receiver's Downloads"
+[[ -z $(ls -A "$RECEIVER_HOME/Downloads" | grep -v '^a.latch$') ]] || fail "no temp file is left behind on the receiver" "$(ls -A "$RECEIVER_HOME/Downloads")"
+grep -q "size class" "$test_dir/out" || fail "send prints the size class"
+grep -qi "in person" "$test_dir/out" || fail "send reminds to share rituals in person" "$(<"$test_dir/out")"
+pass "send goes over Tailscale SSH, lands whole in Downloads and reminds about rituals"
+
+make_container "$vault_a.2" 2
+mkdir -p "$test_dir/second"
+cp "$vault_a.2" "$test_dir/second/a.latch"
+[[ $(status_of omarchy-vault send fleagle-pc "$test_dir/second/a.latch") != 0 ]] || fail "send fails when the receiver already has that name"
+grep -q "already has" "$test_dir/err" || fail "an existing name is explained" "$(<"$test_dir/err")"
+cmp -s "$vault_a" "$RECEIVER_HOME/Downloads/a.latch" || fail "the receiver's existing file is never overwritten"
+[[ -z $(ls -A "$RECEIVER_HOME/Downloads" | grep -v '^a.latch$') ]] || fail "a refused delivery leaves no temp file"
+pass "the receiver refuses to overwrite and leaves nothing behind"
+
+run omarchy-vault send --taildrop fleagle-pc "$vault_a"
+called "^tailscale file cp .*a.latch fleagle-pc:\$" || fail "--taildrop uses tailscale file cp" "$(<"$calls")"
+called "^tailscale ssh" && fail "--taildrop does not also use SSH"
+pass "Taildrop is used only when asked for"
+
+export XDG_DOWNLOAD_DIR="$RECEIVER_HOME/Downloads"
+cp "$test_dir/notes.txt" "$XDG_DOWNLOAD_DIR/notes.txt"
+run omarchy-vault received
+grep -q "^a.latch " "$test_dir/out" || fail "received lists the container" "$(<"$test_dir/out")"
+grep -q "notes.txt" "$test_dir/out" && fail "received lists only latch containers"
+unset XDG_DOWNLOAD_DIR
+pass "received lists only genuine latch containers"
