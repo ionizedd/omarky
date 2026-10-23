@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# omarchy:summary=Open, close, or check the encrypted Vault folder (~/Vault)
-# omarchy:args=open|close|status [--quiet] | status open|closed|unset
-# omarchy:examples=omarchy vault open | omarchy vault close | omarchy vault status closed
+# omarchy:summary=Open, close, or check the encrypted Vault folder (~/Vault), and send latch vaults to another PC
+# omarchy:args=open|close|status [--quiet] | status open|closed|unset | send [--taildrop] [<machine> <file.latch>] | received
+# omarchy:examples=omarchy vault open | omarchy vault close | omarchy vault status closed | omarchy vault send fleagle-pc x.latch | omarchy vault received
 
 # The Vault is a gocryptfs filesystem: the encrypted files live in $cipher_dir
 # and are only readable as plain files while mounted at $mount_dir. Both can be
@@ -91,6 +91,170 @@ close_vault() {
   fi
 }
 
+# --- latch containers: send and received ---------------------------------------
+#
+# A latch container is encrypted at rest, so the road it travels does not need
+# to be trusted for secrecy. What must never travel with it are the rituals.
+# Only genuine containers are sent, so this cannot be used to spray other files.
+
+latch_dir=$OMARCHY_PATH/default/latch
+
+# Print the container's size class, or say on stderr why it is not a container.
+# Uses latch's own parser and header checks; needs no secret and no cryptography.
+latch_class() {
+  /usr/bin/python3 -I - "$latch_dir" "$1" <<'PY'
+import sys
+sys.path.insert(0, sys.argv[1])
+import latch
+try:
+    latch._load(sys.argv[2])
+    _cid, slots, _frames = latch._parse_container(latch._read_container_file(sys.argv[2]))
+    print(latch.size_class(slots[0]["ct_len"]))
+except latch.LatchError as e:
+    print(e, file=sys.stderr)
+    sys.exit(1)
+PY
+}
+
+# Runs on the receiving PC under sh, whatever its login shell is. Writes to a
+# hidden temp file, checks size and magic, then takes the final name with ln,
+# which fails on an existing name: nothing is ever overwritten, and nothing
+# half-sent is ever visible under the real name. $1 name, $2 byte count.
+# Exit codes: 3 not a container, 4 name taken, 5 size mismatch, 6 other.
+remote_receive='set -e
+d="$HOME/Downloads"
+mkdir -p "$d"
+t=$(mktemp "$d/.omarky-vault.XXXXXX")
+trap "rm -f \"$t\"" EXIT
+cat > "$t"
+[ "$(wc -c < "$t" | tr -d " ")" = "$2" ] || exit 5
+[ "$(head -c 8 "$t")" = latch-v4 ] || exit 3
+ln "$t" "$d/$1" 2>/dev/null || { if [ -e "$d/$1" ] || [ -L "$d/$1" ]; then exit 4; fi; exit 6; }'
+
+send_fail() {
+  echo "$1" >&2
+  omarchy-notification-send -u critical -g 󰌾 "$(omarchy-i18n vault.sendFailed "${peer%%.*}")" "$1" >/dev/null 2>&1 || true
+  return 1
+}
+
+send_usage() {
+  echo "Usage: omarchy-vault send [--taildrop] [<machine> <file.latch>]" >&2
+  return 64
+}
+
+send_vault() {
+  local transport=ssh peer="" file="" arg
+
+  for arg in "${args[@]:1}"; do
+    case $arg in
+      --taildrop) transport=taildrop ;;
+      --rituals-to | --rituals-to=*)
+        echo "Rituals are never sent with a vault. Tell them to the other person in person." >&2
+        return 64
+        ;;
+      -*) send_usage; return ;;
+      *)
+        if [[ -z $peer ]]; then
+          peer=$arg
+        elif [[ -z $file ]]; then
+          file=$arg
+        else
+          send_usage; return
+        fi
+        ;;
+    esac
+  done
+
+  if omarchy-cmd-missing tailscale; then
+    echo "Tailscale is not installed. Install it first: Install > Service > Tailscale." >&2
+    return 2
+  fi
+
+  if [[ -z $peer ]]; then
+    # Picking a machine and a file needs a terminal; from the menu there is none.
+    if [[ ! -t 0 ]]; then
+      if [[ $transport == "taildrop" ]]; then
+        exec omarchy-launch-floating-terminal-with-presentation "omarchy-vault send --taildrop"
+      else
+        exec omarchy-launch-floating-terminal-with-presentation "omarchy-vault send"
+      fi
+    fi
+    peer=$(tailscale status --json | jq -r '.Peer[]? | select(.Online) | .HostName' | gum choose --header "Send the vault to which PC?") || return 130
+  fi
+  if [[ -z $file ]]; then
+    file=$(omarchy-file-select --title "$(omarchy-i18n vault.sendPickTitle)" --extensions "latch") || return 130
+  fi
+
+  if [[ ! $peer =~ ^[A-Za-z0-9][A-Za-z0-9._@-]*$ ]]; then
+    echo "That does not look like a machine name: $peer" >&2
+    return 64
+  fi
+
+  local name=${file##*/} class size
+  if [[ ${name,,} == *ritual* ]]; then
+    echo "Refusing to send $name: it looks like a rituals file. Rituals are never sent with a vault; tell them in person." >&2
+    return 1
+  fi
+  if [[ ! -f $file ]]; then
+    echo "No such file: $file" >&2
+    return 1
+  fi
+  if ! class=$(latch_class "$file" 2>&1); then
+    echo "Refusing to send $name: it is not a latch container ($class). Only latch containers can be sent." >&2
+    return 1
+  fi
+  if [[ ! $name =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]]; then
+    echo "Rename $name first: use only letters, digits, dot, dash and underscore." >&2
+    return 1
+  fi
+  size=$(stat -c %s -- "$file")
+
+  local short=${peer%%.*} how error status=0
+  if [[ $transport == "taildrop" ]]; then
+    how="Taildrop"
+    if ! error=$(tailscale file cp --update-interval=0 -- "$file" "$peer:" 2>&1); then
+      send_fail "Taildrop failed: ${error:-no answer}. Tagged PCs cannot use Taildrop; leave out --taildrop to send over Tailscale SSH."
+      return
+    fi
+  else
+    how="Tailscale SSH"
+    tailscale ssh "$peer" "sh -c '$remote_receive' sh $name $size" <"$file" || status=$?
+    case $status in
+      0) ;;
+      3) send_fail "$short did not accept $name: it was not a latch container when it arrived."; return ;;
+      4) send_fail "$short already has a file called $name in Downloads. It was not overwritten; rename yours and send again."; return ;;
+      5) send_fail "$name did not arrive whole at $short. Nothing was kept there; try again."; return ;;
+      *) send_fail "Could not send to $short over Tailscale SSH (status $status). Is Tailscale SSH on at $short? It needs: omarchy-setup-security-tailscale-ssh"; return ;;
+    esac
+  fi
+
+  echo "Sent $name ($size bytes, size class $class) to $short with $how. It is in Downloads there."
+  echo
+  echo "Now tell them the rituals IN PERSON. Never send rituals by the same road as the vault."
+  omarchy-notification-send -g 󰌾 "$(omarchy-i18n vault.sent "$short")" "$name" >/dev/null 2>&1 || true
+}
+
+# List the latch containers in Downloads, where both Tailscale SSH sends and
+# Taildrop deliveries land.
+received_vaults() {
+  local dir=${XDG_DOWNLOAD_DIR:-$HOME/Downloads} f class found=0
+
+  for f in "$dir"/*; do
+    [[ -f $f && $(head -c 8 -- "$f" 2>/dev/null) == "latch-v4" ]] || continue
+    if class=$(latch_class "$f" 2>/dev/null); then
+      echo "${f##*/}  (size class $class)"
+      found=1
+    fi
+  done
+
+  if (( found )); then
+    echo
+    echo "Open one with: omarchy latch open <file>. The rituals must come from the sender in person."
+  else
+    echo "No latch containers in $dir."
+  fi
+}
+
 # With a state name, answer only through the exit code so menu guards can ask
 # "is it closed?" in one call. Without one, print the state and map it to
 # 0 open, 1 closed, 2 not set up.
@@ -114,8 +278,10 @@ case $action in
   open) open_vault ;;
   close) close_vault ;;
   status) vault_status ;;
+  send) send_vault ;;
+  received) received_vaults ;;
   *)
-    echo "Usage: omarchy-vault open|close|status [--quiet]" >&2
+    echo "Usage: omarchy-vault open|close|status [--quiet] | send [--taildrop] [<machine> <file.latch>] | received" >&2
     exit 64
     ;;
 esac

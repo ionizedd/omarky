@@ -330,6 +330,12 @@
   "trigger.vault-close": {
     "label": "Close Vault"
   },
+  "trigger.vault-send": {
+    "label": "Send Vault"
+  },
+  "trigger.vault-received": {
+    "label": "Received Vaults"
+  },
   "trigger.emoji": {
     "label": "Emoji"
   },

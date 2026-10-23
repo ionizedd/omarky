@@ -138,6 +138,8 @@
   "trigger.toggle.crash-capture-off": {"icon":"󱚡","label":"Crash Capture Off","when":"! omarchy-toggle-enabled crash-capture-off","action":"omarchy-toggle-crash-capture"},
   "trigger.vault-open": {"icon":"󰌾","label":"Open Vault","when":"omarchy-vault status closed","action":"omarchy-launch-floating-terminal-with-presentation 'omarchy-vault open'"},
   "trigger.vault-close": {"icon":"󰌾","label":"Close Vault","when":"omarchy-vault status open","action":"omarchy-launch-floating-terminal-with-presentation 'omarchy-vault close'"},
+  "trigger.vault-send": {"icon":"󰒊","label":"Send Vault","when":"omarchy-pkg-present tailscale && omarchy-cmd-present omarchy-latch","action":"omarchy-launch-floating-terminal-with-presentation 'omarchy-vault send'"},
+  "trigger.vault-received": {"icon":"󰉋","label":"Received Vaults","when":"omarchy-cmd-present omarchy-latch","action":"omarchy-launch-floating-terminal-with-presentation 'omarchy-vault received'"},
   "trigger.emoji": {"icon":"","label":"Emoji","aliases":["emoji","emojis"],"action":"omarchy-menu-emoji"},
   "trigger.clipboard-history": {"icon":"󰅇","label":"Clipboard History","action":"omarchy-shell shell summon omarchy.clipboard"},
   "trigger.reminder": {"icon":"󰢌","label":"Reminder","aliases":["reminder"]},
