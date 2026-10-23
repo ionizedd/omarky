@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 """latch.py — a compression vault only the holder of an external secret can open.
 
-Rebuilt 2026-10-22 from the lane memory (the original 10-05 build was lost; the
+Rebuilt 2026-10-22 from the design notes (the original 10-05 build was lost; the
 design laws survived there, so this is rebuilt to those laws, not guessed).
 Format VERSION=4 — the format map is in README.md.
 
